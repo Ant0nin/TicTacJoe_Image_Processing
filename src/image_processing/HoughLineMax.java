@@ -14,30 +14,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package tni_morpion;
+package image_processing;
 
-import input_output.ImageFilesManager;
 import java.awt.image.BufferedImage;
 
 /**
  *
  * @author Antonin Bernardin <antonin.bernardin at etu.unilim.fr>
  */
-public class TNI_Morpion {
+public class HoughLineMax extends AbstractImageProcess {
 
-    final static String INPUT_FOLDER_NAME = System.getProperty("user.dir") + "\\res\\img\\" + "input";
-    final static String OUTPUT_FOLDER_NAME = System.getProperty("user.dir") + "\\res\\img\\" + "output";
-    
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        
-        ImageFilesManager filesManager = new ImageFilesManager(INPUT_FOLDER_NAME, OUTPUT_FOLDER_NAME);
-        
-        // Test import / export
-        BufferedImage inputImage = filesManager.importImage("morpion001.png");
-        filesManager.exportImage(inputImage, "output.bmp");
+    @Override
+    public BufferedImage process(BufferedImage input) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
 }
