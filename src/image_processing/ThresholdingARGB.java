@@ -14,32 +14,38 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package tni_morpion;
+package image_processing;
 
-import image_processing.ThresholdingARGB;
-import import_export.ImageFilesManager;
 import java.awt.image.BufferedImage;
 
 /**
  *
  * @author Antonin Bernardin <antonin.bernardin at etu.unilim.fr>
  */
-public class TNI_Morpion {
+public class ThresholdingARGB extends AbstractImageProcess {
 
-    final static String INPUT_FOLDER_NAME = System.getProperty("user.dir") + "\\res\\img\\" + "input";
-    final static String OUTPUT_FOLDER_NAME = System.getProperty("user.dir") + "\\res\\img\\" + "output";
+    final private int thresholdARGB;
+
+    public ThresholdingARGB(int thresholdARGB) {
+        super();
+        this.thresholdARGB = thresholdARGB;
+    }
     
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
+    @Override
+    public BufferedImage process(BufferedImage input) {
         
-        ImageFilesManager filesManager = new ImageFilesManager(INPUT_FOLDER_NAME, OUTPUT_FOLDER_NAME);
+        BufferedImage output = new BufferedImage(input.getWidth(), input.getHeight(), input.getType());
         
-        BufferedImage inputImage = filesManager.importImage("morpion001.png");
-        ThresholdingARGB thresholding = new ThresholdingARGB(0xffaa0000);
-        BufferedImage outputImage = thresholding.process(inputImage);
-        filesManager.exportImage(outputImage, "output.bmp");
+        for(int x = 0; x < input.getWidth(); x++)
+            for(int y = 0; y < input.getHeight(); y++)
+            {
+                if(input.getRGB(x, y) > thresholdARGB)
+                    output.setRGB(x, y, 0xffffffff);
+                else
+                    output.setRGB(x, y, 0xff000000);
+            }
+        
+        return output;
     }
     
 }
