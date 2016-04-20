@@ -16,7 +16,7 @@
  */
 package tni_morpion;
 
-import image_processing.HoughLine;
+import image_processing.HoughCircle;
 import image_processing.NegativeFilter;
 import image_processing.ImageProcessPipeline;
 import image_processing.Thresholding;
@@ -42,9 +42,9 @@ public class TNI_Morpion {
         BufferedImage inputImage = filesManager.importImage(IMAGE_FILENAME);
         
         ImageProcessPipeline pipeline = new ImageProcessPipeline(
-                new Thresholding(0xff0000aa),
+                new Thresholding(0xffeeeeee),
                 new NegativeFilter(),
-                new HoughLine(15)
+                new HoughCircle(10, 40, 50)
         );
         
         pipeline.process(inputImage);

@@ -88,6 +88,7 @@ public class HoughLine extends AbstractImageProcess {
         return acc;
     }
 
+    // TODO : Méthode commune à isoler
     private int[] findMax(BufferedImage acc, int rmax) {
 
         int[] results = new int[linesQuantity * 3];

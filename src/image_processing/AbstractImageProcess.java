@@ -26,21 +26,4 @@ import java.awt.image.BufferedImage;
 public abstract class AbstractImageProcess {
 
     public abstract BufferedImage process(BufferedImage input);
-    
-    protected int getB(int rgb) {
-        return rgb & 0xFF;
-    }
-    
-    protected int getG(int rgb) {
-        return (rgb>>8) & 0xFF;
-    }
-    
-    protected int getR(int rgb) {
-        return (rgb>>16);
-    }
-    
-    protected int makeRGB(int r, int g, int b) {
-        return ((b&0xFF) + ((g&0xFF)<<8) + ((r&0xFF)<<16) + (0xFF<<24));
-    }
-    
 }
