@@ -17,8 +17,6 @@
 package tni_morpion;
 
 import image_processing.HoughLine;
-import image_processing.MaskFilter;
-import image_processing.LeftShift;
 import image_processing.NegativeFilter;
 import image_processing.ImageProcessPipeline;
 import image_processing.Thresholding;
@@ -49,8 +47,8 @@ public class TNI_Morpion {
                 new HoughLine(15)
         );
         
-        BufferedImage outputImage = pipeline.process(inputImage);
-        filesManager.exportImage(outputImage, IMAGE_FILENAME);
+        pipeline.process(inputImage);
+        pipeline.exportPipelineImages(filesManager, IMAGE_FILENAME);
     }
     
 }

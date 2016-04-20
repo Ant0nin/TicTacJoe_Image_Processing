@@ -16,6 +16,7 @@
  */
 package image_processing;
 
+import import_export.ImageFilesManager;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,10 +29,12 @@ import java.util.List;
 public class ImageProcessPipeline extends AbstractImageProcess {
 
     private final List<AbstractImageProcess> tasks;
+    private final List<BufferedImage> intermediateImages;
     
     public ImageProcessPipeline(AbstractImageProcess... imageProcesses) {
         super();
         tasks = new ArrayList<>(imageProcesses.length);
+        intermediateImages = new ArrayList<>(imageProcesses.length+1);
         tasks.addAll(Arrays.asList(imageProcesses));
     }
     
@@ -39,13 +42,29 @@ public class ImageProcessPipeline extends AbstractImageProcess {
     public BufferedImage process(BufferedImage input) {
         
         BufferedImage output = new BufferedImage(input.getWidth(), input.getHeight(), input.getType());
+        intermediateImages.add(input);
         
         for(AbstractImageProcess p : tasks) {
             output = p.process(input);
+            intermediateImages.add(output);
             input = output;
         }
-        
+
         return output;
+    }
+    
+    public void exportPipelineImages(ImageFilesManager fileManager, String filename) {
+        
+        int count = 0;
+        String[] split = filename.split("\\.");
+        StringBuilder fullpath;
+        
+        for(BufferedImage image : intermediateImages) {
+            fullpath = new StringBuilder();
+            fullpath.append(split[0]).append('_').append(count).append('.').append(split[1]);
+            fileManager.exportImage(image, fullpath.toString());
+            count++;
+        }
     }
     
 }
