@@ -22,13 +22,26 @@ import java.awt.image.BufferedImage;
  *
  * @author Antonin Bernardin <antonin.bernardin at etu.unilim.fr>
  */
-public class HoughLineAcc extends AbstractImageProcess {
+public class LeftShift extends AbstractImageProcess {
 
-    @Override
-    public BufferedImage process(BufferedImage input) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private final int leftShiftQuantity;
+    
+    public LeftShift(int leftShiftQuantity) {
+        super();
+        this.leftShiftQuantity = leftShiftQuantity;
     }
     
-    
-    
+    @Override
+    public BufferedImage process(BufferedImage input) {
+        
+        BufferedImage output = new BufferedImage(input.getWidth(), input.getHeight(), input.getType());
+        
+        for(int x = 0; x < output.getWidth(); x++)
+            for(int y = 0; y < output.getHeight(); y++) {
+                int currentARGB = input.getRGB(x, y);
+                output.setRGB(x, y, currentARGB << (leftShiftQuantity * 8));
+            }
+        
+        return output;
+    }
 }

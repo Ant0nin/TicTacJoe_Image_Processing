@@ -16,7 +16,12 @@
  */
 package tni_morpion;
 
-import image_processing.ThresholdingARGB;
+import image_processing.HoughLine;
+import image_processing.MaskFilter;
+import image_processing.LeftShift;
+import image_processing.NegativeFilter;
+import image_processing.ImageProcessPipeline;
+import image_processing.Thresholding;
 import import_export.ImageFilesManager;
 import java.awt.image.BufferedImage;
 
@@ -28,6 +33,7 @@ public class TNI_Morpion {
 
     final static String INPUT_FOLDER_NAME = System.getProperty("user.dir") + "\\res\\img\\" + "input";
     final static String OUTPUT_FOLDER_NAME = System.getProperty("user.dir") + "\\res\\img\\" + "output";
+    final static String IMAGE_FILENAME = "morpion001.png";
     
     /**
      * @param args the command line arguments
@@ -35,11 +41,16 @@ public class TNI_Morpion {
     public static void main(String[] args) {
         
         ImageFilesManager filesManager = new ImageFilesManager(INPUT_FOLDER_NAME, OUTPUT_FOLDER_NAME);
+        BufferedImage inputImage = filesManager.importImage(IMAGE_FILENAME);
         
-        BufferedImage inputImage = filesManager.importImage("morpion001.png");
-        ThresholdingARGB thresholding = new ThresholdingARGB(0xffaa0000);
-        BufferedImage outputImage = thresholding.process(inputImage);
-        filesManager.exportImage(outputImage, "output.bmp");
+        ImageProcessPipeline pipeline = new ImageProcessPipeline(
+                new Thresholding(0xff0000aa),
+                new NegativeFilter(),
+                new HoughLine(15)
+        );
+        
+        BufferedImage outputImage = pipeline.process(inputImage);
+        filesManager.exportImage(outputImage, IMAGE_FILENAME);
     }
     
 }

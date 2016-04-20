@@ -17,18 +17,22 @@
 package image_processing;
 
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  *
  * @author Antonin Bernardin <antonin.bernardin at etu.unilim.fr>
  */
-public class ThresholdingARGB extends AbstractImageProcess {
+public class ImageProcessPipeline extends AbstractImageProcess {
 
-    final private int thresholdARGB;
-
-    public ThresholdingARGB(int thresholdARGB) {
+    private final List<AbstractImageProcess> tasks;
+    
+    public ImageProcessPipeline(AbstractImageProcess... imageProcesses) {
         super();
-        this.thresholdARGB = thresholdARGB;
+        tasks = new ArrayList<>(imageProcesses.length);
+        tasks.addAll(Arrays.asList(imageProcesses));
     }
     
     @Override
@@ -36,14 +40,10 @@ public class ThresholdingARGB extends AbstractImageProcess {
         
         BufferedImage output = new BufferedImage(input.getWidth(), input.getHeight(), input.getType());
         
-        for(int x = 0; x < input.getWidth(); x++)
-            for(int y = 0; y < input.getHeight(); y++)
-            {
-                if(input.getRGB(x, y) > thresholdARGB)
-                    output.setRGB(x, y, 0xffffffff);
-                else
-                    output.setRGB(x, y, 0xff000000);
-            }
+        for(AbstractImageProcess p : tasks) {
+            output = p.process(input);
+            input = output;
+        }
         
         return output;
     }

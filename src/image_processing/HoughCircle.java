@@ -22,7 +22,7 @@ import java.awt.image.BufferedImage;
  *
  * @author Antonin Bernardin <antonin.bernardin at etu.unilim.fr>
  */
-public class HoughCircleAcc extends AbstractImageProcess {
+public class HoughCircle extends AbstractImageProcess {
 
     @Override
     public BufferedImage process(BufferedImage input) {

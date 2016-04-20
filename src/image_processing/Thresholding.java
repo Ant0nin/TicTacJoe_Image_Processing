@@ -22,11 +22,30 @@ import java.awt.image.BufferedImage;
  *
  * @author Antonin Bernardin <antonin.bernardin at etu.unilim.fr>
  */
-public class HoughCircleMax extends AbstractImageProcess {
+public class Thresholding extends AbstractImageProcess {
 
+    final private int thresholdARGB;
+
+    public Thresholding(int thresholdARGB) {
+        super();
+        this.thresholdARGB = thresholdARGB;
+    }
+    
     @Override
     public BufferedImage process(BufferedImage input) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        
+        BufferedImage output = new BufferedImage(input.getWidth(), input.getHeight(), input.getType());
+        
+        for(int x = 0; x < input.getWidth(); x++)
+            for(int y = 0; y < input.getHeight(); y++)
+            {
+                if(input.getRGB(x, y) > thresholdARGB)
+                    output.setRGB(x, y, 0xffffffff);
+                else
+                    output.setRGB(x, y, 0xff000000);
+            }
+        
+        return output;
     }
     
 }

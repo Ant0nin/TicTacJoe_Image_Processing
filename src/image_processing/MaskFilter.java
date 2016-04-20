@@ -22,11 +22,27 @@ import java.awt.image.BufferedImage;
  *
  * @author Antonin Bernardin <antonin.bernardin at etu.unilim.fr>
  */
-public class HoughLineMax extends AbstractImageProcess {
+public class MaskFilter extends AbstractImageProcess {
 
+    final int mask;
+    
+    public MaskFilter(int mask) {
+        super();
+        this.mask = mask;
+    }
+    
     @Override
     public BufferedImage process(BufferedImage input) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        
+        BufferedImage output = new BufferedImage(input.getWidth(), input.getHeight(), input.getType());
+        
+        for(int x = 0; x < output.getWidth(); x++)
+            for(int y = 0; y < output.getHeight(); y++) {
+                int argb = input.getRGB(x, y) & mask;
+                output.setRGB(x, y, argb);
+            }
+        
+        return output;
     }
     
 }
