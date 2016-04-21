@@ -16,7 +16,6 @@
  */
 package image_processing;
 
-import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -70,8 +69,8 @@ public class CustomFilter extends AbstractImageProcess {
         int imgH = input.getHeight();
         int[] total = new int[3]; // rgb
         
-        for (int y = halfH; y <= ((imgH-1) - halfH); y++) {
-            for (int x = halfW; x <= ((imgW-1) - halfW); x++) {
+        for (int y = halfH; y < (imgH - halfH); y++) {
+            for (int x = halfW; x < (imgW - halfW); x++) {
                 
                 total[0] = 0;
                 total[1] = 0;
