@@ -16,6 +16,7 @@
  */
 package tni_morpion;
 
+import image_processing.CustomFilter;
 import image_processing.HoughCircle;
 import image_processing.NegativeFilter;
 import image_processing.ImageProcessPipeline;
@@ -31,7 +32,7 @@ public class TNI_Morpion {
 
     final static String INPUT_FOLDER_NAME = System.getProperty("user.dir") + "\\res\\img\\" + "input";
     final static String OUTPUT_FOLDER_NAME = System.getProperty("user.dir") + "\\res\\img\\" + "output";
-    final static String IMAGE_FILENAME = "morpion001.png";
+    final static String IMAGE_FILENAME = "morpion003.png";
     
     /**
      * @param args the command line arguments
@@ -42,6 +43,8 @@ public class TNI_Morpion {
         BufferedImage inputImage = filesManager.importImage(IMAGE_FILENAME);
         
         ImageProcessPipeline pipeline = new ImageProcessPipeline(
+                new CustomFilter("softer"),
+                new CustomFilter("blur_horizontal"),
                 new Thresholding(0xffeeeeee),
                 new NegativeFilter(),
                 new HoughCircle(10, 40, 50)
