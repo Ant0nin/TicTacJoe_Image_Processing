@@ -28,6 +28,8 @@ import java.util.List;
  */
 public class ImageProcessPipeline extends AbstractImageProcess {
 
+    private static int count = 0;
+    
     private final List<AbstractImageProcess> tasks;
     private final List<BufferedImage> intermediateImages;
     
@@ -55,7 +57,6 @@ public class ImageProcessPipeline extends AbstractImageProcess {
     
     public void exportPipelineImages(ImageFilesManager fileManager, String filename) {
         
-        int count = 0;
         String[] split = filename.split("\\.");
         StringBuilder fullpath;
         
