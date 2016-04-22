@@ -23,9 +23,6 @@ import java.awt.image.BufferedImage;
  * @author Antonin Bernardin <antonin.bernardin at etu.unilim.fr>
  */
 public class Skeletonization extends AbstractImageProcess {
-
-    private static final int BACK = 0xff000000;
-    private static final int FRONT = 0xffffffff;
     
     private static final boolean ON = true;
     private static final boolean OFF = false;
@@ -50,7 +47,7 @@ public class Skeletonization extends AbstractImageProcess {
                         break;
                     default:
                         System.err.println("Erreur : Il faut effectuer un seuillage avant d'appliquer une squeletisation");
-                        break;
+                        return null;
                 }
             }
         

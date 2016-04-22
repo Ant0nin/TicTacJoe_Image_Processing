@@ -34,10 +34,13 @@ public class ImageProcessPipeline extends AbstractImageProcess {
     private final List<BufferedImage> intermediateImages;
     
     public ImageProcessPipeline(AbstractImageProcess... imageProcesses) {
+        this(Arrays.asList(imageProcesses));
+    }
+    
+    public ImageProcessPipeline(List<AbstractImageProcess> imageProcesses) {
         super();
-        tasks = new ArrayList<>(imageProcesses.length);
-        intermediateImages = new ArrayList<>(imageProcesses.length+1);
-        tasks.addAll(Arrays.asList(imageProcesses));
+        intermediateImages = new ArrayList<>(imageProcesses.size());
+        tasks = imageProcesses;
     }
     
     @Override

@@ -16,14 +16,17 @@
  */
 package tni_morpion;
 
+import image_analysis.ColorHistogramEvaluator;
+import image_analysis.NoiseEvaluator;
+import image_processing.AbstractImageProcess;
 import image_processing.CustomFilter;
-import image_processing.HoughCircle;
-import image_processing.NegativeFilter;
+import image_processing.DominantColorThresholding;
 import image_processing.ImageProcessPipeline;
 import image_processing.Skeletonization;
-import image_processing.Thresholding;
 import import_export.ImageFilesManager;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -33,7 +36,7 @@ public class TNI_Morpion {
 
     final static String INPUT_FOLDER_NAME = System.getProperty("user.dir") + "\\res\\img\\" + "input";
     final static String OUTPUT_FOLDER_NAME = System.getProperty("user.dir") + "\\res\\img\\" + "output";
-    final static String IMAGE_FILENAME = "morpion003.png";
+    final static String IMAGE_FILENAME = "morpion001.png";
 
     /**
      * @param args the command line arguments
@@ -41,17 +44,32 @@ public class TNI_Morpion {
     public static void main(String[] args) {
 
         ImageFilesManager filesManager = new ImageFilesManager(INPUT_FOLDER_NAME, OUTPUT_FOLDER_NAME);
-        BufferedImage inputImage = filesManager.importImage(IMAGE_FILENAME);
-        
+        BufferedImage image = filesManager.importImage(IMAGE_FILENAME);
+
+        // Processes
+        List<AbstractImageProcess> allProcesses = new ArrayList<>();
+        CustomFilter blurFilter = new CustomFilter("softer");
         Skeletonization skeletonizationProcess = new Skeletonization();
+        
+        /*NoiseEvaluator noiseEv = new NoiseEvaluator();
+        long noiseQty = noiseEv.evaluate(image);
+        int blurIt = (int)(noiseQty / 1000000);
+        for(int i = 0; i < blurIt; i++)
+            allProcesses.add(blurFilter);*/
+        
+        long[] colorHistogram = new ColorHistogramEvaluator().evaluate(image);
+        DominantColorThresholding deleteDominantColor = new DominantColorThresholding(colorHistogram, 6);
+        
+        allProcesses.add(blurFilter);
+        allProcesses.add(blurFilter);
+        allProcesses.add(blurFilter);
+        allProcesses.add(blurFilter);
+        allProcesses.add(deleteDominantColor);
+        allProcesses.add(skeletonizationProcess);
 
-        ImageProcessPipeline pipeline = new ImageProcessPipeline(
-                new Thresholding(0xffaa0000),
-                new NegativeFilter(),
-                skeletonizationProcess
-        );
+        ImageProcessPipeline pipeline = new ImageProcessPipeline(allProcesses);
 
-        pipeline.process(inputImage);
+        pipeline.process(image);
         pipeline.exportPipelineImages(filesManager, IMAGE_FILENAME);
     }
 
