@@ -17,9 +17,9 @@
 package tni_morpion;
 
 import image_analysis.ColorHistogramEvaluator;
-import image_analysis.NoiseEvaluator;
 import image_processing.AbstractImageProcess;
 import image_processing.CustomFilter;
+import image_processing.Dilation;
 import image_processing.DominantColorThresholding;
 import image_processing.ImageProcessPipeline;
 import image_processing.Skeletonization;
@@ -50,6 +50,7 @@ public class TNI_Morpion {
         List<AbstractImageProcess> allProcesses = new ArrayList<>();
         CustomFilter blurFilter = new CustomFilter("softer");
         Skeletonization skeletonizationProcess = new Skeletonization();
+        Dilation simpleDilation = new Dilation();
         
         /*NoiseEvaluator noiseEv = new NoiseEvaluator();
         long noiseQty = noiseEv.evaluate(image);
@@ -61,10 +62,8 @@ public class TNI_Morpion {
         DominantColorThresholding deleteDominantColor = new DominantColorThresholding(colorHistogram, 6);
         
         allProcesses.add(blurFilter);
-        allProcesses.add(blurFilter);
-        allProcesses.add(blurFilter);
-        allProcesses.add(blurFilter);
         allProcesses.add(deleteDominantColor);
+        allProcesses.add(simpleDilation);
         allProcesses.add(skeletonizationProcess);
 
         ImageProcessPipeline pipeline = new ImageProcessPipeline(allProcesses);

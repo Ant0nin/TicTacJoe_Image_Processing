@@ -17,44 +17,45 @@
 package image_processing;
 
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
  * @author Antonin Bernardin <antonin.bernardin at etu.unilim.fr>
  */
-public class DominantColorThresholding extends AbstractImageProcess {
-    
-    List<Integer> colorsToRemove = new ArrayList<>();
-    
-    public DominantColorThresholding(long[] colorHistogram, long sensibility) {
-        
-        for(int i = 0; i < colorHistogram.length; i++)
-            if(colorHistogram[i] > sensibility)
-                colorsToRemove.add(i);
-    }
+public class Dilation extends AbstractImageProcess {
 
     @Override
     public BufferedImage process(BufferedImage input) {
         
         int width = input.getWidth();
-        int heigth = input.getHeight();
-        BufferedImage output = new BufferedImage(width, heigth, input.getType());
+        int height = input.getHeight();
+        BufferedImage output = new BufferedImage(width, height, input.getType());
         
-        for(int y = 0; y < heigth; y++)
+        for(int y = 0; y < height; y++)
             for(int x = 0; x < width; x++) {
                 
-                int currentRGB = input.getRGB(x, y) & 0x00ffffff;
-                output.setRGB(x, y, FRONT);
-                for(Integer color : colorsToRemove) {
-                    if((int)color == currentRGB) {
-                        output.setRGB(x, y, BACK);
-                        break;
-                    }
+                int currentARGB = input.getRGB(x, y);
+                if(currentARGB==FRONT || currentARGB==BACK)
+                    output.setRGB(x, y, currentARGB);
+                else {
+                    System.err.println("Erreur : Il faut appliquer un seuillage avant d'effectuer une dilatation.");
+                    return null;
+                }
+            }
+                
+        for(int y = 1; y < height-1; y++)
+            for(int x = 1; x < width-1; x++) {
+                
+                int currentARGB = input.getRGB(x, y);
+                if(currentARGB == FRONT) {
+                    output.setRGB(x, y-1, FRONT);
+                    output.setRGB(x+1, y, FRONT);
+                    output.setRGB(x, y+1, FRONT);
+                    output.setRGB(x-1, y, FRONT);
                 }
             }
         
         return output;
     }
+    
 }
