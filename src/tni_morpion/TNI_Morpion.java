@@ -33,7 +33,7 @@ public class TNI_Morpion {
 
     final static String INPUT_FOLDER_NAME = System.getProperty("user.dir") + "\\res\\img\\" + "input";
     final static String OUTPUT_FOLDER_NAME = System.getProperty("user.dir") + "\\res\\img\\" + "output";
-    final static String IMAGE_FILENAME = "morpion003.png";
+    final static String IMAGE_FILENAME = "morpion002.png";
 
     /**
      * @param args the command line arguments
@@ -42,16 +42,17 @@ public class TNI_Morpion {
 
         ImageFilesManager filesManager = new ImageFilesManager(INPUT_FOLDER_NAME, OUTPUT_FOLDER_NAME);
         BufferedImage inputImage = filesManager.importImage(IMAGE_FILENAME);
+        
+        Skeletonization skeletonizationProcess = new Skeletonization();
 
         ImageProcessPipeline pipeline = new ImageProcessPipeline(
                 new CustomFilter("softer"),
                 new Thresholding(0xffeeeeee),
                 new NegativeFilter(),
-                new Skeletonization(),
-                new Skeletonization(),
-                new Skeletonization(),
-                new Skeletonization(),
-                new Skeletonization()
+                skeletonizationProcess,
+                skeletonizationProcess,
+                skeletonizationProcess,
+                skeletonizationProcess
         );
 
         pipeline.process(inputImage);

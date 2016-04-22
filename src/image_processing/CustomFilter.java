@@ -53,8 +53,8 @@ public class CustomFilter extends AbstractImageProcess {
     @Override
     public BufferedImage process(BufferedImage input) {
 
-        int halfW = (filter.w - 1) >> 1;
-        int halfH = (filter.h - 1) >> 1;
+        final int halfW = (filter.w - 1) >> 1;
+        final int halfH = (filter.h - 1) >> 1;
         int divisionFactor = 0;
 
         BufferedImage output = new BufferedImage(input.getWidth(), input.getHeight(), input.getType());
@@ -65,8 +65,8 @@ public class CustomFilter extends AbstractImageProcess {
             }
         }
 
-        int imgW = input.getWidth();
-        int imgH = input.getHeight();
+        final int imgW = input.getWidth();
+        final int imgH = input.getHeight();
         int[] total = new int[3]; // rgb
         
         for (int y = halfH; y < (imgH - halfH); y++) {

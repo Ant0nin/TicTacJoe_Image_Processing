@@ -24,69 +24,98 @@ import java.awt.image.BufferedImage;
  */
 public class Skeletonization extends AbstractImageProcess {
 
-    private static final int FOND = 0xff000000;
-    private static final int FORME = 0xffffffff;
+    private static final int BACK = 0xff000000;
+    private static final int FRONT = 0xffffffff;
+    
+    private static final boolean ON = true;
+    private static final boolean OFF = false;
     
     @Override
     public BufferedImage process(BufferedImage input) 
     {
-        BufferedImage output = pass(input, true);
-        output = pass(output, false);
+        int width = input.getWidth();
+        int height = input.getHeight();
+        
+        Boolean[][] bImage = new Boolean[width][height];
+        Boolean[][] classificator = new Boolean[width][height];
+        for(int y = 0; y < height; y++)
+            for(int x = 0; x < width; x++) {
+                classificator[x][y] = OFF;
+                switch (input.getRGB(x, y)) {
+                    case BACK:
+                        bImage[x][y] = OFF;
+                        break;
+                    case FRONT:
+                        bImage[x][y] = ON;
+                        break;
+                    default:
+                        System.err.println("Erreur : Il faut effectuer un seuillage avant d'appliquer une squeletisation");
+                        break;
+                }
+            }
+        
+        pass(bImage, classificator, width, height, true);
+        pass(bImage, classificator, width, height, false);
+        
+        BufferedImage output = new BufferedImage(width, height, input.getType());
+        for(int y = 0; y < height; y++)
+            for(int x = 0; x < width; x++) {
+                output.setRGB(x, y, bImage[x][y] ? FRONT : BACK);
+            }
         
         return output;
     }
     
-    private BufferedImage pass(BufferedImage input, boolean isFirstPass) {
+    private void pass(Boolean[][] bImage, Boolean[][] classificator, int width, int height, boolean isFirstPass) {
         
-        int width = input.getWidth();
-        int height = input.getHeight();
         boolean isSecondPass = !isFirstPass;
-
-        BufferedImage output = new BufferedImage(width, height, input.getType());
-        for(int y = 0; y < height; y++)
-            for(int x = 0; x < width; x++)
-                output.setRGB(x, y, FOND);
                 
         boolean[] v = new boolean[8];
         
         for(int y = 1; y < height-1; y++)
             for(int x = 1; x < width-1; x++) {
                 
-                int currentPix = input.getRGB(x, y);
-                if(currentPix == FOND) {
-                    output.setRGB(x, y, FOND);
+                boolean currentPix = bImage[x][y];
+                if(currentPix == OFF) {
+                    classificator[x][y] = OFF;
                 }
                 else {
-                    v[0] = (input.getRGB(x,     y+1)    == FOND);
-                    v[1] = (input.getRGB(x+1,   y+1)    == FOND);
-                    v[2] = (input.getRGB(x+1,   y)      == FOND);
-                    v[3] = (input.getRGB(x+1,   y-1)    == FOND);
-                    v[4] = (input.getRGB(x,     y-1)    == FOND);
-                    v[5] = (input.getRGB(x-1,   y-1)    == FOND);
-                    v[6] = (input.getRGB(x-1,   y)      == FOND);
-                    v[7] = (input.getRGB(x-1,   y+1)    == FOND);
+                    v[0] = (bImage[x]  [y+1] == OFF);
+                    v[1] = (bImage[x+1][y+1] == OFF);
+                    v[2] = (bImage[x+1][y]   == OFF);
+                    v[3] = (bImage[x+1][y-1] == OFF);
+                    v[4] = (bImage[x]  [y-1] == OFF);
+                    v[5] = (bImage[x-1][y-1] == OFF);
+                    v[6] = (bImage[x-1][y]   == OFF);
+                    v[7] = (bImage[x-1][y+1] == OFF);
+                    
+                    int countNeighbour = 0;
+                    for(int i=0; i<v.length; i++)
+                        if(v[i])
+                            countNeighbour++;
+                    
+                    if(!(countNeighbour >= 2 &&  countNeighbour <= 6))
+                        continue;
                     
                     int countTransitions = 0;
-                    //int countTrueNeighbour = 0;
-                    for(int i=0; i<v.length; i++) {
-                        if(i!=0 && (v[i-1] != v[i]))
+                    for(int i=1; i<v.length; i++)
+                        if((v[i-1]==false && v[i]==true))
                             countTransitions++;
-                        /*if(v[i])
-                            countTrueNeighbour++;*/
-                    }
                     
-                    if( /*(countTrueNeighbour >= 2 && countTrueNeighbour <= 6)
-                        ||*/ countTransitions == 1
-                        ||  (isFirstPass  && ((v[0] | v[2] | v[4]) || (v[2] | v[4] | v[6])))
-                        ||  (isSecondPass && ((v[0] | v[2] | v[6]) || (v[0] | v[4] | v[6])))
+                    if(     countTransitions == 1
+                        &&  (       (isFirstPass  && (v[0] | v[2] | v[4]) && (v[2] | v[4] | v[6]))
+                                ||  (isSecondPass && (v[0] | v[2] | v[6]) && (v[0] | v[4] | v[6]))
+                            )
                     )
-                        output.setRGB(x, y, FOND);
-                    else
-                        output.setRGB(x, y, FORME);
+                        classificator[x][y] = ON;
                 }
             }
         
-        return output;
+        for(int y = 0; y < height; y++)
+            for(int x = 0; x < width; x++) {
+                if(classificator[x][y] == ON)
+                    bImage[x][y] = OFF;
+            }
     }
 
 }
