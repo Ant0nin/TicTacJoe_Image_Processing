@@ -22,9 +22,11 @@ import java.awt.image.BufferedImage;
  *
  * @author Antonin Bernardin <antonin.bernardin at etu.unilim.fr>
  */
-public class HoughLine extends AbstractImageProcess {
+public class HoughLine extends AbstractImageProcess implements IHough {
 
     private final int linesQuantity;
+    
+    private int[] maxima;
 
     public HoughLine(int linesQuantity) {
         super();
@@ -39,8 +41,8 @@ public class HoughLine extends AbstractImageProcess {
         int rmax = (int) Math.sqrt(width * width + height * height);
         
         BufferedImage acc = generateAcc(input, rmax);
-        int[] results = findMax(acc, rmax);
-        BufferedImage output = plotLines(input, results);
+        maxima = findMax(acc, rmax, 180, linesQuantity);
+        BufferedImage output = plotLines(input, maxima);
 
         return output;
     }
@@ -86,39 +88,6 @@ public class HoughLine extends AbstractImageProcess {
         }
         
         return acc;
-    }
-
-    // TODO : Méthode commune à isoler
-    private int[] findMax(BufferedImage acc, int rmax) {
-
-        int[] results = new int[linesQuantity * 3];
-
-        for (int r = 0; r < rmax; r++) {
-            for (int theta = 0; theta < 180; theta++) {
-                int value = (acc.getRGB(r, theta) & 0xff);
-
-                if (value > results[(linesQuantity - 1) * 3]) {
-
-                    results[(linesQuantity - 1) * 3] = value;
-                    results[(linesQuantity - 1) * 3 + 1] = r;
-                    results[(linesQuantity - 1) * 3 + 2] = theta;
-
-                    int i = (linesQuantity - 2) * 3;
-                    while ((i >= 0) && (results[i + 3] > results[i])) {
-                        for (int j = 0; j < 3; j++) {
-                            int temp = results[i + j];
-                            results[i + j] = results[i + 3 + j];
-                            results[i + 3 + j] = temp;
-                        }
-                        i = i - 3;
-                        if (i < 0) {
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        return results;
     }
     
     private BufferedImage plotLines(BufferedImage input, int[] results) {

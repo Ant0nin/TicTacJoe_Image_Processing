@@ -22,11 +22,13 @@ import java.awt.image.BufferedImage;
  *
  * @author Antonin Bernardin <antonin.bernardin at etu.unilim.fr>
  */
-public class HoughCircle extends AbstractImageProcess {
+public class HoughCircle extends AbstractImageProcess implements IHough {
 
     final private int circlesQuantity;
     final private int rStart;
     final private int rEnd;
+    
+    private int[] maxima;
 
     public HoughCircle(int circlesQuantity, int rStart, int rEnd) {
         super();
@@ -41,8 +43,8 @@ public class HoughCircle extends AbstractImageProcess {
         int height = input.getHeight();
 
         BufferedImage acc = generateAcc(input);        
-        int[] results = findMax(acc, width, height);
-        BufferedImage output = plotCircles(input, results);
+        maxima = findMax(acc, width, height, circlesQuantity);
+        BufferedImage output = plotCircles(input, maxima);
 
         return output;
     }
@@ -57,9 +59,9 @@ public class HoughCircle extends AbstractImageProcess {
         double t;
         int r;
 
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                if ((input.getRGB(x, y) & 0xff) == 255) {
+        for (int x = 1; x < width-1; x++) {
+            for (int y = 1; y < height-1; y++) {
+                if ((input.getRGB(x, y)) == FRONT) {
 
                     for (int theta = 0; theta < 360; theta++) {
 
@@ -95,39 +97,6 @@ public class HoughCircle extends AbstractImageProcess {
         }
 
         return acc;
-    }
-
-    // TODO : Méthode commune à isoler
-    private int[] findMax(BufferedImage acc, int width, int height) {
-
-        int[] results = new int[circlesQuantity * 3];
-
-        for (int r = 0; r < width; r++) {
-            for (int theta = 0; theta < height; theta++) {
-                int value = (acc.getRGB(r, theta) & 0xff);
-
-                if (value > results[(circlesQuantity - 1) * 3]) {
-
-                    results[(circlesQuantity - 1) * 3] = value;
-                    results[(circlesQuantity - 1) * 3 + 1] = r;
-                    results[(circlesQuantity - 1) * 3 + 2] = theta;
-
-                    int i = (circlesQuantity - 2) * 3;
-                    while ((i >= 0) && (results[i + 3] > results[i])) {
-                        for (int j = 0; j < 3; j++) {
-                            int temp = results[i + j];
-                            results[i + j] = results[i + 3 + j];
-                            results[i + 3 + j] = temp;
-                        }
-                        i = i - 3;
-                        if (i < 0) {
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        return results;
     }
 
     private BufferedImage plotCircles(BufferedImage input, int[] results) {
