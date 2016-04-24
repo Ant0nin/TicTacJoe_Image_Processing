@@ -18,6 +18,7 @@ package image_processing;
 
 import import_export.ImageFilesManager;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -65,7 +66,7 @@ public class ImageProcessPipeline extends AbstractImageProcess {
         
         for(BufferedImage image : intermediateImages) {
             fullpath = new StringBuilder();
-            fullpath.append(split[0]).append('_').append(count).append('.').append(split[1]);
+            fullpath.append(split[0]).append('\\').append(count).append('.').append(split[1]);
             fileManager.exportImage(image, fullpath.toString());
             count++;
         }

@@ -55,13 +55,25 @@ public class ImageFilesManager {
     public void exportImage(BufferedImage outputImage, String fileName) {
          
         StringBuilder fullPathName = new StringBuilder();
+        StringBuilder subDirectoryPath = new StringBuilder();
+        
+        String split[] = fileName.split("\\\\");
+        if(split.length > 1) {
+            subDirectoryPath.append(outputDirectory);
+            for(int i = 0; i < split.length - 1; i++) {
+                subDirectoryPath.append('\\').append(split[i]);
+            }
+            File directory = new File(subDirectoryPath.toString());
+            if(!directory.exists())
+                directory.mkdirs();
+        }
         
         try {
-            String[] split = fileName.split("\\.");
+            split = split[split.length-1].split("\\.");
             String name = split[0];
             String extend = split[1];
             
-            fullPathName.append(outputDirectory).append('\\').append(name).append('.').append(extend);
+            fullPathName.append(subDirectoryPath).append('\\').append(name).append('.').append(extend);
             
             File outputFile = new File(fullPathName.toString());
             ImageIO.write(outputImage, extend, outputFile);
