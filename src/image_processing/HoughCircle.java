@@ -27,8 +27,6 @@ public class HoughCircle extends AbstractImageProcess implements IHough {
     final private int circlesQuantity;
     final private int rStart;
     final private int rEnd;
-    
-    private int[] maxima;
 
     public HoughCircle(int circlesQuantity, int rStart, int rEnd) {
         super();
@@ -42,61 +40,11 @@ public class HoughCircle extends AbstractImageProcess implements IHough {
         int width = input.getWidth();
         int height = input.getHeight();
 
-        BufferedImage acc = generateAcc(input);        
-        maxima = findMax(acc, width, height, circlesQuantity);
+        BufferedImage acc = new HoughCircleAccumulator().process(input);
+        int[] maxima = findMax(acc, width, height, circlesQuantity);
         BufferedImage output = plotCircles(input, maxima);
 
         return output;
-    }
-
-    private BufferedImage generateAcc(BufferedImage input) {
-
-        int width = input.getWidth();
-        int height = input.getHeight();
-        BufferedImage acc = new BufferedImage(width, height, input.getType());
-
-        int x0, y0;
-        double t;
-        int r;
-
-        for (int x = 1; x < width-1; x++) {
-            for (int y = 1; y < height-1; y++) {
-                if ((input.getRGB(x, y)) == FRONT) {
-
-                    for (int theta = 0; theta < 360; theta++) {
-
-                        r = (int) (x * Math.cos(((theta) * Math.PI) / 180) + y * Math.sin(((theta) * Math.PI) / 180));
-                        t = (theta * Math.PI) / 180;
-                        x0 = (int) Math.round(x - r * Math.cos(t));
-                        y0 = (int) Math.round(y - r * Math.sin(t));
-                        
-                        if (x0 < width && x0 > 0 && y0 < height && y0 > 0) {
-                            int currentARGB = acc.getRGB(x0, y0);
-                            acc.setRGB(x0, y0, currentARGB + 1);
-                        }
-                    }
-                }
-            }
-        }
-
-        int max = 0;
-        for (r = 0; r < width; r++) {
-            for (int theta = 0; theta < height; theta++) {
-                int valueB = acc.getRGB(r, theta) & 0xff;
-                if (valueB > max) {
-                    max = valueB;
-                }
-            }
-        }
-
-        for (r = 0; r < width; r++) {
-            for (int theta = 0; theta < height; theta++) {
-                int value = (int) (((double) (acc.getRGB(r, theta) & 0xff) / (double) max) * 255.0);
-                acc.setRGB(r, theta, value); // canal BLUE
-            }
-        }
-
-        return acc;
     }
 
     private BufferedImage plotCircles(BufferedImage input, int[] results) {
@@ -106,11 +54,11 @@ public class HoughCircle extends AbstractImageProcess implements IHough {
         BufferedImage output = new BufferedImage(width, height, input.getType());
 
         for (int i = circlesQuantity - 1; i >= 0; i--) {
-            
-            int pix = results[i*3];
-            int xCenter = results[i*3+1];
-            int yCenter = results[i*3+2];
-            
+
+            int pix = results[i * 3];
+            int xCenter = results[i * 3 + 1];
+            int yCenter = results[i * 3 + 2];
+
             for (int r = rStart; r < rEnd; r++) {
 
                 int x, y, r2;
@@ -144,12 +92,13 @@ public class HoughCircle extends AbstractImageProcess implements IHough {
                 }
             }
         }
-        
+
         return output;
     }
-        
+
     private void setPixel(BufferedImage image, int value, int x, int y) {
-        if(x < image.getWidth() && x > 0 && y < image.getHeight() && y > 0)
+        if (x < image.getWidth() && x > 0 && y < image.getHeight() && y > 0) {
             image.setRGB(x, y, 0xff000000 | (value << 16 | value << 8 | value));
+        }
     }
-  }
+}

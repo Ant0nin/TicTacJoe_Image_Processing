@@ -26,8 +26,6 @@ public class HoughLine extends AbstractImageProcess implements IHough {
 
     private final int linesQuantity;
     
-    private int[] maxima;
-
     public HoughLine(int linesQuantity) {
         super();
         this.linesQuantity = linesQuantity;
@@ -39,55 +37,12 @@ public class HoughLine extends AbstractImageProcess implements IHough {
         int width = input.getWidth();
         int height = input.getHeight();
         int rmax = (int) Math.sqrt(width * width + height * height);
-        
-        BufferedImage acc = generateAcc(input, rmax);
-        maxima = findMax(acc, rmax, 180, linesQuantity);
+                
+        BufferedImage acc = new HoughLineAccumulator(rmax).process(input);
+        int[] maxima = findMax(acc, rmax, 180, linesQuantity);
         BufferedImage output = plotLines(input, maxima);
 
         return output;
-    }
-    
-    private BufferedImage generateAcc(BufferedImage input, int rmax) {
-        
-        int width = input.getWidth();
-        int height = input.getHeight();
-        BufferedImage acc = new BufferedImage(rmax, 180, input.getType());
-        int r;
-        
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                if ((input.getRGB(x, y) & 0xff) == 255) {
-                    for (int theta = 0; theta < 180; theta++) {
-
-                        r = (int) (x * Math.cos(((theta) * Math.PI) / 180) + y * Math.sin(((theta) * Math.PI) / 180));
-
-                        if ((r > 0) && (r <= rmax)) {
-                            int currentARGB = acc.getRGB(r, theta);
-                            acc.setRGB(r, theta, currentARGB + 1); // canal BLUE
-                        }
-                    }
-                }
-            }
-        }
-
-        int max = 0;
-        for (r = 0; r < rmax; r++) {
-            for (int theta = 0; theta < 180; theta++) {
-                int valueB = acc.getRGB(r, theta) & 0xff;
-                if (valueB > max) {
-                    max = valueB;
-                }
-            }
-        }
-
-        for (r = 0; r < rmax; r++) {
-            for (int theta = 0; theta < 180; theta++) {
-                int value = (int) (((double) (acc.getRGB(r, theta) & 0xff) / (double) max) * 255.0);
-                acc.setRGB(r, theta, value); // canal BLUE
-            }
-        }
-        
-        return acc;
     }
     
     private BufferedImage plotLines(BufferedImage input, int[] results) {

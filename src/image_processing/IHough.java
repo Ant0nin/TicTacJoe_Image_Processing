@@ -23,7 +23,7 @@ import java.awt.image.BufferedImage;
  * @author Antonin Bernardin <antonin.bernardin at etu.unilim.fr>
  */
 public interface IHough {
-    
+        
     default int[] findMax(BufferedImage acc, int width, int height, int accSize) {
 
         int[] results = new int[accSize * 3];
@@ -54,6 +54,5 @@ public interface IHough {
             }
         }
         return results;
-    }
-    
+    }    
 }
