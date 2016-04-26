@@ -27,12 +27,18 @@ public class HoughCircle extends AbstractImageProcess implements IHough {
     final private int circlesQuantity;
     final private int rStart;
     final private int rEnd;
+    final private AccumulatorMask accMask;
 
     public HoughCircle(int circlesQuantity, int rStart, int rEnd) {
+        this(circlesQuantity, rStart, rEnd, null);
+    }
+    
+    public HoughCircle(int circlesQuantity, int rStart, int rEnd, AccumulatorMask accMask) {
         super();
         this.circlesQuantity = circlesQuantity;
         this.rStart = rStart;
         this.rEnd = rEnd;
+        this.accMask = accMask;
     }
 
     @Override
@@ -41,6 +47,8 @@ public class HoughCircle extends AbstractImageProcess implements IHough {
         int height = input.getHeight();
 
         BufferedImage acc = new HoughCircleAccumulator().process(input);
+        if(accMask != null)
+            acc = accMask.process(acc);
         int[] maxima = findMax(acc, width, height, circlesQuantity);
         BufferedImage output = plotCircles(input, maxima);
 

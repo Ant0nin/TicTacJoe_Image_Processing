@@ -25,10 +25,16 @@ import java.awt.image.BufferedImage;
 public class HoughLine extends AbstractImageProcess implements IHough {
 
     private final int linesQuantity;
+    private final AccumulatorMask accMask;
     
     public HoughLine(int linesQuantity) {
+        this(linesQuantity, null);
+    }
+    
+    public HoughLine(int linesQuantity, AccumulatorMask accMask) {
         super();
         this.linesQuantity = linesQuantity;
+        this.accMask = accMask;
     }
     
     @Override
@@ -39,6 +45,8 @@ public class HoughLine extends AbstractImageProcess implements IHough {
         int rmax = (int) Math.sqrt(width * width + height * height);
                 
         BufferedImage acc = new HoughLineAccumulator(rmax).process(input);
+        if(accMask != null)
+            acc = accMask.process(acc);
         int[] maxima = findMax(acc, rmax, 180, linesQuantity);
         BufferedImage output = plotLines(input, maxima);
 

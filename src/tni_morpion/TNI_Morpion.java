@@ -18,6 +18,7 @@ package tni_morpion;
 
 import image_analysis.ColorHistogramEvaluator;
 import image_processing.AbstractImageProcess;
+import image_processing.AccumulatorMask;
 import image_processing.CustomFilter;
 import image_processing.Dilation;
 import image_processing.DominantColorThresholding;
@@ -25,6 +26,7 @@ import image_processing.HoughCircle;
 import image_processing.HoughLine;
 import image_processing.ImageProcessPipeline;
 import image_processing.Skeletonization;
+import image_processing.Thresholding;
 import import_export.ImageFilesManager;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -38,7 +40,7 @@ public class TNI_Morpion {
 
     final static String INPUT_FOLDER_NAME = System.getProperty("user.dir") + "\\res\\img\\" + "input";
     final static String OUTPUT_FOLDER_NAME = System.getProperty("user.dir") + "\\res\\img\\" + "output";
-    final static String IMAGE_FILENAME = "circle001.png";
+    final static String IMAGE_FILENAME = "morpion001.png";
 
     /**
      * @param args the command line arguments
@@ -49,14 +51,22 @@ public class TNI_Morpion {
         BufferedImage image = filesManager.importImage(IMAGE_FILENAME);
 
         // Processes
+        AccumulatorMask linesAccMask = new AccumulatorMask(
+            new int[][]{ 
+                {40,50}, 
+                {130,140}}
+        );
         List<AbstractImageProcess> allProcesses = new ArrayList<>();
         CustomFilter blurFilter = new CustomFilter("softer");
+        CustomFilter sharpenFilter = new CustomFilter("sharpen_medium");
+        CustomFilter softenVeryHigh = new CustomFilter("soften_very_high");
         long[] colorHistogram = new ColorHistogramEvaluator().evaluate(image);
-        DominantColorThresholding deleteDominantColor = new DominantColorThresholding(colorHistogram, 6);
+        DominantColorThresholding deleteDominantColor = new DominantColorThresholding(colorHistogram, 20);
         Dilation simpleDilation = new Dilation();
         Skeletonization skeletonizationProcess = new Skeletonization();
-        HoughLine houghLine = new HoughLine(10);
+        HoughLine houghLine = new HoughLine(100, linesAccMask);
         HoughCircle houghCircle = new HoughCircle(1, 20, 200);
+        Thresholding simpleThresholding = new Thresholding(0xffaaaaaa);
 
         /*NoiseEvaluator noiseEv = new NoiseEvaluator();
         long noiseQty = noiseEv.evaluate(image);
@@ -66,10 +76,10 @@ public class TNI_Morpion {
 
         allProcesses.add(blurFilter);
         allProcesses.add(deleteDominantColor);
-        /*allProcesses.add(simpleDilation);
+        allProcesses.add(simpleDilation);
         allProcesses.add(skeletonizationProcess);
-        allProcesses.add(houghLine);*/
-        allProcesses.add(houghCircle);
+        allProcesses.add(skeletonizationProcess);
+        allProcesses.add(houghLine);
 
         ImageProcessPipeline pipeline = new ImageProcessPipeline(allProcesses);
 

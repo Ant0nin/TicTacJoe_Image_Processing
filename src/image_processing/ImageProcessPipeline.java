@@ -18,7 +18,6 @@ package image_processing;
 
 import import_export.ImageFilesManager;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
