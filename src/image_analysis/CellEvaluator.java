@@ -16,9 +16,7 @@
  */
 package image_analysis;
 
-import image_processing.HoughCircle;
 import image_processing.HoughCircleAccumulator;
-import image_processing.HoughLine;
 import image_processing.HoughLineAccumulator;
 import java.awt.image.BufferedImage;
 

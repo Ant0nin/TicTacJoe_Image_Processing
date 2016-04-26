@@ -46,7 +46,7 @@ public class HoughCircle extends AbstractImageProcess implements IHough {
         int width = input.getWidth();
         int height = input.getHeight();
 
-        BufferedImage acc = new HoughCircleAccumulator().process(input);
+        BufferedImage acc = new HoughCircleAccumulator(rStart, rEnd).process(input);
         if(accMask != null)
             acc = accMask.process(acc);
         int[] maxima = findMax(acc, width, height, circlesQuantity);

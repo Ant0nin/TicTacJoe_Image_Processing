@@ -30,7 +30,7 @@ public interface IHough {
 
         for (int r = 0; r < width; r++) {
             for (int theta = 0; theta < height; theta++) {
-                int value = (acc.getRGB(r, theta) & 0xff);
+                int value = (acc.getRGB(r, theta) & 0x00ffffff);
 
                 if (value > results[(accSize - 1) * 3]) {
 

@@ -23,8 +23,11 @@ import image_processing.CustomFilter;
 import image_processing.Dilation;
 import image_processing.DominantColorThresholding;
 import image_processing.HoughCircle;
+import image_processing.HoughCircleAccumulator;
 import image_processing.HoughLine;
+import image_processing.HoughLineAccumulator;
 import image_processing.ImageProcessPipeline;
+import image_processing.NegativeFilter;
 import image_processing.Skeletonization;
 import image_processing.Thresholding;
 import import_export.ImageFilesManager;
@@ -40,7 +43,7 @@ public class TNI_Morpion {
 
     final static String INPUT_FOLDER_NAME = System.getProperty("user.dir") + "\\res\\img\\" + "input";
     final static String OUTPUT_FOLDER_NAME = System.getProperty("user.dir") + "\\res\\img\\" + "output";
-    final static String IMAGE_FILENAME = "morpion001.png";
+    final static String IMAGE_FILENAME = "cross001.png";
 
     /**
      * @param args the command line arguments
@@ -64,9 +67,12 @@ public class TNI_Morpion {
         DominantColorThresholding deleteDominantColor = new DominantColorThresholding(colorHistogram, 20);
         Dilation simpleDilation = new Dilation();
         Skeletonization skeletonizationProcess = new Skeletonization();
+        HoughLineAccumulator linesAcc = new HoughLineAccumulator((int) Math.sqrt(image.getWidth() * image.getWidth() + image.getHeight() * image.getHeight()));
         HoughLine houghLine = new HoughLine(100, linesAccMask);
-        HoughCircle houghCircle = new HoughCircle(1, 20, 200);
+        HoughCircleAccumulator circleAcc = new HoughCircleAccumulator(100, 200);
+        HoughCircle houghCircle = new HoughCircle(1, 180, 190);
         Thresholding simpleThresholding = new Thresholding(0xffaaaaaa);
+        NegativeFilter inversion = new NegativeFilter();
 
         /*NoiseEvaluator noiseEv = new NoiseEvaluator();
         long noiseQty = noiseEv.evaluate(image);
@@ -74,11 +80,8 @@ public class TNI_Morpion {
         for(int i = 0; i < blurIt; i++)
             allProcesses.add(blurFilter);*/
 
-        allProcesses.add(blurFilter);
-        allProcesses.add(deleteDominantColor);
-        allProcesses.add(simpleDilation);
-        allProcesses.add(skeletonizationProcess);
-        allProcesses.add(skeletonizationProcess);
+        allProcesses.add(simpleThresholding);
+        allProcesses.add(inversion);
         allProcesses.add(houghLine);
 
         ImageProcessPipeline pipeline = new ImageProcessPipeline(allProcesses);

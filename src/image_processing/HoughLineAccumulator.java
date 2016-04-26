@@ -26,7 +26,7 @@ public class HoughLineAccumulator extends AbstractImageProcess {
 
     private final int rmax;
     
-    HoughLineAccumulator(int rmax) {
+    public HoughLineAccumulator(int rmax) {
         this.rmax = rmax;
     }
     
