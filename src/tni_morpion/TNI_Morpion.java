@@ -22,12 +22,14 @@ import image_processing.AccumulatorMask;
 import image_processing.CustomFilter;
 import image_processing.Dilation;
 import image_processing.DominantColorThresholding;
+import image_processing.Erosion;
 import image_processing.HoughCircle;
 import image_processing.HoughCircleAccumulator;
 import image_processing.HoughLine;
 import image_processing.HoughLineAccumulator;
 import image_processing.ImageProcessPipeline;
 import image_processing.NegativeFilter;
+import image_processing.Scaling;
 import image_processing.Skeletonization;
 import image_processing.Thresholding;
 import import_export.ImageFilesManager;
@@ -43,7 +45,7 @@ public class TNI_Morpion {
 
     final static String INPUT_FOLDER_NAME = System.getProperty("user.dir") + "\\res\\img\\" + "input";
     final static String OUTPUT_FOLDER_NAME = System.getProperty("user.dir") + "\\res\\img\\" + "output";
-    final static String IMAGE_FILENAME = "morpion002.png";
+    final static String IMAGE_FILENAME = "morpion005.png";
 
     /**
      * @param args the command line arguments
@@ -64,25 +66,35 @@ public class TNI_Morpion {
         CustomFilter sharpenFilter = new CustomFilter("sharpen_medium");
         CustomFilter softenVeryHigh = new CustomFilter("soften_very_high");
         long[] colorHistogram = new ColorHistogramEvaluator().evaluate(image);
-        DominantColorThresholding deleteDominantColor = new DominantColorThresholding(colorHistogram, 20);
+        DominantColorThresholding deleteDominantColor = new DominantColorThresholding(colorHistogram, 1);
         Dilation simpleDilation = new Dilation();
         Skeletonization skeletonizationProcess = new Skeletonization();
         HoughLineAccumulator linesAcc = new HoughLineAccumulator((int) Math.sqrt(image.getWidth() * image.getWidth() + image.getHeight() * image.getHeight()));
-        HoughLine houghLine = new HoughLine(100, linesAccMask);
+        HoughLine houghLine = new HoughLine(3000);
         HoughCircleAccumulator circleAcc = new HoughCircleAccumulator(40, 70);
-        HoughCircle houghCircle = new HoughCircle(1000, 40, 70);
-        Thresholding simpleThresholding = new Thresholding(0xffaaaa00);
+        HoughCircle houghCircle = new HoughCircle(500, 12, 15);
+        Thresholding simpleThresholding = new Thresholding(0xffaaaaaa);
         NegativeFilter inversion = new NegativeFilter();
+        Erosion erosion = new Erosion();
+        Scaling scaling = new Scaling(300, 300);
 
         /*NoiseEvaluator noiseEv = new NoiseEvaluator();
         long noiseQty = noiseEv.evaluate(image);
         int blurIt = (int)(noiseQty / 1000000);
         for(int i = 0; i < blurIt; i++)
             allProcesses.add(blurFilter);*/
+        
+        // TODO : voir la classe Graphics pour le scaling
 
+        /*allProcesses.add(blurFilter);
+        allProcesses.add(blurFilter);
+        allProcesses.add(blurFilter);*/
         allProcesses.add(simpleThresholding);
-        allProcesses.add(inversion);
+        //allProcesses.add(inversion);
+        //allProcesses.add(deleteDominantColor);
+        allProcesses.add(scaling);
         allProcesses.add(houghLine);
+        allProcesses.add(simpleThresholding);
 
         ImageProcessPipeline pipeline = new ImageProcessPipeline(allProcesses);
 

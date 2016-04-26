@@ -16,45 +16,33 @@
  */
 package image_processing;
 
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
  * @author Antonin Bernardin <antonin.bernardin at etu.unilim.fr>
  */
-public class DominantColorThresholding extends AbstractImageProcess {
-    
-    List<Integer> colorsToRemove = new ArrayList<>();
-    
-    public DominantColorThresholding(long[] colorHistogram, long sensibility) {
-        
-        for(int i = 0; i < colorHistogram.length; i++)
-            if(colorHistogram[i] > sensibility)
-                colorsToRemove.add(i);
+public class Scaling extends AbstractImageProcess {
+
+    private final int width;
+    private final int height;
+
+    public Scaling(int width, int height) {
+        this.width = width;
+        this.height = height;
     }
 
     @Override
     public BufferedImage process(BufferedImage input) {
-        
-        int width = input.getWidth();
-        int height = input.getHeight();
+
         BufferedImage output = new BufferedImage(width, height, input.getType());
         
-        for(int y = 0; y < height; y++)
-            for(int x = 0; x < width; x++) {
-                
-                int currentRGB = input.getRGB(x, y) & 0x00ffffff;
-                output.setRGB(x, y, FRONT);
-                for(Integer color : colorsToRemove) {
-                    if((int)color == currentRGB) {
-                        output.setRGB(x, y, BACK);
-                        break;
-                    }
-                }
-            }
-        
+        Graphics2D bGr = output.createGraphics();
+        bGr.drawImage(input.getScaledInstance(width, height, 0), 0, 0, null);
+        bGr.dispose();
+
         return output;
     }
+
 }

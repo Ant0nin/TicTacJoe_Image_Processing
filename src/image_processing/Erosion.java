@@ -17,23 +17,12 @@
 package image_processing;
 
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
  * @author Antonin Bernardin <antonin.bernardin at etu.unilim.fr>
  */
-public class DominantColorThresholding extends AbstractImageProcess {
-    
-    List<Integer> colorsToRemove = new ArrayList<>();
-    
-    public DominantColorThresholding(long[] colorHistogram, long sensibility) {
-        
-        for(int i = 0; i < colorHistogram.length; i++)
-            if(colorHistogram[i] > sensibility)
-                colorsToRemove.add(i);
-    }
+public class Erosion extends AbstractImageProcess {
 
     @Override
     public BufferedImage process(BufferedImage input) {
@@ -45,16 +34,33 @@ public class DominantColorThresholding extends AbstractImageProcess {
         for(int y = 0; y < height; y++)
             for(int x = 0; x < width; x++) {
                 
-                int currentRGB = input.getRGB(x, y) & 0x00ffffff;
-                output.setRGB(x, y, FRONT);
-                for(Integer color : colorsToRemove) {
-                    if((int)color == currentRGB) {
-                        output.setRGB(x, y, BACK);
-                        break;
-                    }
+                int currentARGB = input.getRGB(x, y);
+                if(currentARGB==FRONT || currentARGB==BACK)
+                    output.setRGB(x, y, currentARGB);
+                else {
+                    System.err.println("Erreur : Il faut appliquer un seuillage avant d'effectuer une érosion.");
+                    return null;
                 }
             }
         
+        int k = height - 1;
+        int l = width - 1;
+        
+        for(int y = 1; y < k; y++)
+            for(int x = 1; x < l; x++) {
+                
+                int currentARGB = input.getRGB(x, y);
+                if(currentARGB == BACK) {
+                    output.setRGB(x, y-1, BACK);
+                    output.setRGB(x+1, y, BACK);
+                    output.setRGB(x, y+1, BACK);
+                    output.setRGB(x-1, y, BACK);
+                }
+                
+            }
+        
         return output;
+        
     }
+    
 }

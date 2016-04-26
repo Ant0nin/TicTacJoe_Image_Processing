@@ -43,8 +43,11 @@ public class Dilation extends AbstractImageProcess {
                 }
             }
                 
-        for(int y = 1; y < height-1; y++)
-            for(int x = 1; x < width-1; x++) {
+        int k = height - 1;
+        int l = width - 1;
+        
+        for(int y = 1; y < k; y++)
+            for(int x = 1; x < l; x++) {
                 
                 int currentARGB = input.getRGB(x, y);
                 if(currentARGB == FRONT) {
