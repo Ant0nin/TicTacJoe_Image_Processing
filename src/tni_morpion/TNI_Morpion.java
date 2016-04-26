@@ -43,7 +43,7 @@ public class TNI_Morpion {
 
     final static String INPUT_FOLDER_NAME = System.getProperty("user.dir") + "\\res\\img\\" + "input";
     final static String OUTPUT_FOLDER_NAME = System.getProperty("user.dir") + "\\res\\img\\" + "output";
-    final static String IMAGE_FILENAME = "cross001.png";
+    final static String IMAGE_FILENAME = "morpion002.png";
 
     /**
      * @param args the command line arguments
@@ -69,9 +69,9 @@ public class TNI_Morpion {
         Skeletonization skeletonizationProcess = new Skeletonization();
         HoughLineAccumulator linesAcc = new HoughLineAccumulator((int) Math.sqrt(image.getWidth() * image.getWidth() + image.getHeight() * image.getHeight()));
         HoughLine houghLine = new HoughLine(100, linesAccMask);
-        HoughCircleAccumulator circleAcc = new HoughCircleAccumulator(100, 200);
-        HoughCircle houghCircle = new HoughCircle(1, 180, 190);
-        Thresholding simpleThresholding = new Thresholding(0xffaaaaaa);
+        HoughCircleAccumulator circleAcc = new HoughCircleAccumulator(40, 70);
+        HoughCircle houghCircle = new HoughCircle(1000, 40, 70);
+        Thresholding simpleThresholding = new Thresholding(0xffaaaa00);
         NegativeFilter inversion = new NegativeFilter();
 
         /*NoiseEvaluator noiseEv = new NoiseEvaluator();

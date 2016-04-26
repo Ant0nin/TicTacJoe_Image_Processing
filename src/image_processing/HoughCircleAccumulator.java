@@ -40,6 +40,7 @@ public class HoughCircleAccumulator extends AbstractImageProcess {
 
         int x0, y0;
         double t;
+        int[][] tempAcc = new int[width][height];
 
         for (int x = 1; x < width - 1; x++) {
             for (int y = 1; y < height - 1; y++) {
@@ -53,8 +54,7 @@ public class HoughCircleAccumulator extends AbstractImageProcess {
                             y0 = (int) Math.round(y - r * Math.sin(t));
 
                             if (x0 < width && x0 > 0 && y0 < height && y0 > 0) {
-                                int currentARGB = acc.getRGB(x0, y0);
-                                acc.setRGB(x0, y0, 0x00ffffff & currentARGB + 1);
+                                tempAcc[x0][y0]++;
                             }
                         }
                     }
@@ -65,17 +65,17 @@ public class HoughCircleAccumulator extends AbstractImageProcess {
         int max = 0;
         for (int r = 0; r < width; r++) {
             for (int theta = 0; theta < height; theta++) {
-                int valueB = acc.getRGB(r, theta) & 0xff;
-                if (valueB > max) {
-                    max = valueB;
+                int value = tempAcc[r][theta];
+                if (value > max) {
+                    max = value;
                 }
             }
         }
 
         for (int r = 0; r < width; r++) {
             for (int theta = 0; theta < height; theta++) {
-                int value = (int) (((double) (acc.getRGB(r, theta) & 0xff) / (double) max) * 255.0);
-                acc.setRGB(r, theta, 0x00ffffff & value);
+                int value = (int) (((double) (tempAcc[r][theta]) / (double) max) * 255.0);
+                acc.setRGB(r, theta, 0xff000000 | (value << 16 | value << 8 | value));
             }
         }
 

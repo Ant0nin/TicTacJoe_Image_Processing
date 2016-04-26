@@ -38,16 +38,17 @@ public class HoughLineAccumulator extends AbstractImageProcess {
         BufferedImage acc = new BufferedImage(rmax, 180, input.getType());
         int r;
         
+        int[][] tempAcc = new int[rmax][180];
+        
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
-                if ((input.getRGB(x, y) & 0xff) == 255) {
+                if ((input.getRGB(x, y) & 0xff) == 0xff) {
                     for (int theta = 0; theta < 180; theta++) {
 
                         r = (int) (x * Math.cos(((theta) * Math.PI) / 180) + y * Math.sin(((theta) * Math.PI) / 180));
 
                         if ((r > 0) && (r <= rmax)) {
-                            int currentARGB = acc.getRGB(r, theta);
-                            acc.setRGB(r, theta, currentARGB + 1); // canal BLUE
+                            tempAcc[r][theta]++;
                         }
                     }
                 }
@@ -57,17 +58,17 @@ public class HoughLineAccumulator extends AbstractImageProcess {
         int max = 0;
         for (r = 0; r < rmax; r++) {
             for (int theta = 0; theta < 180; theta++) {
-                int valueB = acc.getRGB(r, theta) & 0xff;
-                if (valueB > max) {
-                    max = valueB;
+                int value = tempAcc[r][theta];
+                if (value > max) {
+                    max = value;
                 }
             }
         }
 
         for (r = 0; r < rmax; r++) {
             for (int theta = 0; theta < 180; theta++) {
-                int value = (int) (((double) (acc.getRGB(r, theta) & 0xff) / (double) max) * 255.0);
-                acc.setRGB(r, theta, value); // canal BLUE
+                int value = (int) (((double) (tempAcc[r][theta]) / (double) max) * 255.0);
+                acc.setRGB(r, theta, 0xff000000 | (value << 16 | value << 8 | value));
             }
         }
         
