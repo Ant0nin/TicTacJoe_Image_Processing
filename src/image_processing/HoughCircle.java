@@ -17,6 +17,7 @@
 package image_processing;
 
 import java.awt.image.BufferedImage;
+import structures.Point;
 
 /**
  *
@@ -105,7 +106,8 @@ public class HoughCircle extends AbstractImageProcess implements IHough {
     }
 
     private void setPixel(BufferedImage image, int value, int x, int y) {
-        if (x < image.getWidth() && x > 0 && y < image.getHeight() && y > 0) {
+        Point p = new Point(x, y);
+        if (p.isInside(image)) {
             image.setRGB(x, y, 0xff000000 | (value << 16 | value << 8 | value));
         }
     }

@@ -17,6 +17,7 @@
 package tni_morpion;
 
 import image_analysis.ColorHistogramEvaluator;
+import image_analysis.GridEvaluator;
 import image_processing.AbstractImageProcess;
 import image_processing.AccumulatorMask;
 import image_processing.CustomFilter;
@@ -56,6 +57,7 @@ public class TNI_Morpion {
         BufferedImage image = filesManager.importImage(IMAGE_FILENAME);
 
         // Processes
+        GridEvaluator gridConstructor = new GridEvaluator(5);
         AccumulatorMask linesAccMask = new AccumulatorMask(
             new int[][]{ 
                 {40,50}, 
@@ -98,8 +100,12 @@ public class TNI_Morpion {
 
         ImageProcessPipeline pipeline = new ImageProcessPipeline(allProcesses);
 
-        pipeline.process(image);
+        image = pipeline.process(image);
         pipeline.exportPipelineImages(filesManager, IMAGE_FILENAME);
+        
+        Boolean[][] grid = gridConstructor.evaluate(image);
+        
+        
     }
 
 }
