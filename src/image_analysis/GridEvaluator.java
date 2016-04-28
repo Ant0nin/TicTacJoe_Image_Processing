@@ -21,6 +21,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import structures.Box;
+import structures.PlayerEnum;
 import structures.Point;
 import structures.StraightLine;
 
@@ -44,7 +45,7 @@ public class GridEvaluator {
         this.cellEvaluator = cellEvaluator;
     }
 
-    public Boolean[][] evaluate(BufferedImage prefilteredImage, BufferedImage imageGrid, BufferedImage imageCircles) {
+    public PlayerEnum[][] evaluate(BufferedImage prefilteredImage, BufferedImage imageGrid, BufferedImage imageCircles) {
         List<Integer>[] borders = detectBorders(imageGrid);
         int sizeX = borders[0].size() - 1;
         int sizeY = borders[2].size() - 1;
@@ -58,13 +59,13 @@ public class GridEvaluator {
         detectLinesIntersections(imageGrid, borders, lines, intersections);
         calcBoundingBoxes(intersections, sizeX, sizeY, boundingBoxes);
         constructCells(boundingBoxes, sizeX, sizeY, prefilteredImage, imageGrid, imageCircles, cellsPrefiltered, cellsCircles);
-        Boolean[][] gamestate = detectGameState(cellsPrefiltered, cellsCircles, sizeX, sizeY);
+        PlayerEnum[][] gamestate = detectGameState(cellsPrefiltered, cellsCircles, sizeX, sizeY);
         return gamestate;
     }
 
-    private Boolean[][] detectGameState(BufferedImage[][] cellsPrefiltered, BufferedImage[][] cellsCircles, int sizeX, int sizeY) {
+    private PlayerEnum[][] detectGameState(BufferedImage[][] cellsPrefiltered, BufferedImage[][] cellsCircles, int sizeX, int sizeY) {
 
-        Boolean[][] gamestate = new Boolean[sizeX][sizeY];
+        PlayerEnum[][] gamestate = new PlayerEnum[sizeX][sizeY];
         for (int y = 0; y < sizeY; y++) {
             for (int x = 0; x < sizeX; x++) {
                 gamestate[x][y] = cellEvaluator.determineCell(cellsPrefiltered[x][y], cellsCircles[x][y]);
@@ -103,11 +104,6 @@ public class GridEvaluator {
                         circleCells[x][y].setRGB(k, l, color);
                     }
                 }
-                
-                // TODO : debug à retirer
-                ImageProcessPipeline pl_debug = new ImageProcessPipeline();
-                pl_debug.process(prefilteredCells[x][y]);
-                pl_debug.process(circleCells[x][y]);
             }
         }
     }

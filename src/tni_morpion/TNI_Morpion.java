@@ -16,6 +16,7 @@
  */
 package tni_morpion;
 
+import game_logic.GamestateEvaluator;
 import image_analysis.CellEvaluator;
 import image_analysis.ColorHistogramEvaluator;
 import image_analysis.GridEvaluator;
@@ -35,6 +36,7 @@ import image_processing.Skeletonization;
 import image_processing.Thresholding;
 import import_export.ImageFilesManager;
 import java.awt.image.BufferedImage;
+import structures.PlayerEnum;
 
 /**
  *
@@ -80,12 +82,14 @@ public class TNI_Morpion {
         HoughCircle houghCircle = new HoughCircle(250, 15, 25);
         CellEvaluator cellEvaluator = new CellEvaluator(98, 5);
         GridEvaluator gridEvaluator = new GridEvaluator(10, cellEvaluator);
+        GamestateEvaluator gameEvaluator = new GamestateEvaluator(3);
 
         /*NoiseEvaluator noiseEv = new NoiseEvaluator();
         long noiseQty = noiseEv.evaluate(image);
         int blurIt = (int)(noiseQty / 1000000);
         for(int i = 0; i < blurIt; i++)
             allProcesses.add(blurFilter);*/
+        
         ImageProcessPipeline pl_prefiltering = new ImageProcessPipeline(
                 scaling,
                 inversion,
@@ -106,7 +110,10 @@ public class TNI_Morpion {
 
         ImageProcessPipeline.exportPipelineImages(filesManager, IMAGE_FILENAME);
         
-        Boolean[][] gamestate = gridEvaluator.evaluate(img_prefiltered, img_grid, img_circles);
+        PlayerEnum[][] gamestate = gridEvaluator.evaluate(img_prefiltered, img_grid, img_circles);
+        PlayerEnum winner = gameEvaluator.determineWinner(gamestate);
+        gameEvaluator.displayGamestate(gamestate, winner);
+        
     }
 
 }

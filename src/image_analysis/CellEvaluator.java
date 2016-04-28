@@ -17,16 +17,13 @@
 package image_analysis;
 
 import java.awt.image.BufferedImage;
+import structures.PlayerEnum;
 
 /**
  *
  * @author Antonin Bernardin <antonin.bernardin at etu.unilim.fr>
  */
 public class CellEvaluator {
-    
-    public final static Boolean NOTHING = null;
-    public final static Boolean CROSS = false;
-    public final static Boolean CIRCLE = true;
     
     private int abscencePercentage;
     private int circleDetectPercentage;
@@ -46,20 +43,20 @@ public class CellEvaluator {
             this.circleDetectPercentage = circleDetectPercentage;
     }
 
-    public Boolean determineCell(BufferedImage cellPrefiltered, BufferedImage cellCircle) {
+    public PlayerEnum determineCell(BufferedImage cellPrefiltered, BufferedImage cellCircle) {
                 
         BWHistogramEvaluator colorEvaluator = new BWHistogramEvaluator(true);
         float histogram[];
         
         histogram = colorEvaluator.evaluate(cellPrefiltered);
         if(histogram[0] > (float)abscencePercentage)
-            return NOTHING;
+            return PlayerEnum.NOTHING;
         
         histogram = colorEvaluator.evaluate(cellCircle);
         if(histogram[1] > (float)circleDetectPercentage)
-            return CIRCLE;
+            return PlayerEnum.CIRCLE;
         else
-            return CROSS;
+            return PlayerEnum.CROSS;
     }
     
 }
