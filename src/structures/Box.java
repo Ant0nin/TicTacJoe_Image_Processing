@@ -16,25 +16,21 @@
  */
 package structures;
 
-import java.awt.image.BufferedImage;
-
 /**
  *
  * @author Antonin Bernardin <antonin.bernardin at etu.unilim.fr>
  */
-public class Point {
+public class Box {
     
-    public int x;
-    public int y;
-        
-    public Point(int x, int y) {
-        this.x = x;
-        this.y = y;
-    };
-    
-    public boolean isInside(BufferedImage image) {
-        int w = image.getWidth();
-        int h = image.getHeight();
-        return (x > 0 && x < w && y > 0 && y < h);
+    public int xMin;
+    public int xMax;
+    public int yMin;
+    public int yMax;
+
+    public Box(int xMin, int xMax, int yMin, int yMax) {
+        this.xMin = xMin;
+        this.xMax = xMax;
+        this.yMin = yMin;
+        this.yMax = yMax;
     }
 }

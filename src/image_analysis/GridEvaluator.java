@@ -16,11 +16,12 @@
  */
 package image_analysis;
 
+import image_processing.ImageProcessPipeline;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import structures.Box;
 import structures.Point;
-import structures.Rectangle;
 import structures.StraightLine;
 
 /**
@@ -30,46 +31,148 @@ import structures.StraightLine;
 public class GridEvaluator {
 
     private final int spaceTolerance;
-    private int spaceBetween;
+    private final CellEvaluator cellEvaluator;
+
+    private int spaceBetween; // TODO : retirer
 
     // TODO : retirer ces attributs (redondance)
     private final int BACK = 0xff000000;
     private final int FRONT = 0xffffffff;
 
-    public GridEvaluator(int spaceTolerance) {
+    public GridEvaluator(int spaceTolerance, CellEvaluator cellEvaluator) {
         this.spaceTolerance = spaceTolerance;
+        this.cellEvaluator = cellEvaluator;
     }
 
-    public Boolean[][] evaluate(BufferedImage imageGrid) {
+    public Boolean[][] evaluate(BufferedImage prefilteredImage, BufferedImage imageGrid, BufferedImage imageCircles) {
+        List<Integer>[] borders = detectBorders(imageGrid);
+        int sizeX = borders[0].size() - 1;
+        int sizeY = borders[2].size() - 1;
+        List<StraightLine>[] lines = new List[2];
 
-        List[] borders = detectBorders(imageGrid);
-        Point[][] cellsPos = detectCellsPositions(borders, imageGrid);
-        Rectangle[][] boundingBoxes = calcBoundingBoxes(cellsPos);
+        Point[][] intersections = new Point[sizeX + 1][sizeY + 1];
+        BufferedImage[][] cellsPrefiltered = new BufferedImage[sizeX][sizeY];
+        BufferedImage[][] cellsCircles = new BufferedImage[sizeX][sizeY];
+        Box[][] boundingBoxes = new Box[sizeX][sizeY];
 
-        // TODO
-        return null;
+        detectLinesIntersections(imageGrid, borders, lines, intersections);
+        calcBoundingBoxes(intersections, sizeX, sizeY, boundingBoxes);
+        constructCells(boundingBoxes, sizeX, sizeY, prefilteredImage, imageGrid, imageCircles, cellsPrefiltered, cellsCircles);
+        Boolean[][] gamestate = detectGameState(cellsPrefiltered, cellsCircles, sizeX, sizeY);
+        return gamestate;
     }
 
-    private Rectangle[][] calcBoundingBoxes(Point[][] cellsPos) {
+    private Boolean[][] detectGameState(BufferedImage[][] cellsPrefiltered, BufferedImage[][] cellsCircles, int sizeX, int sizeY) {
+
+        Boolean[][] gamestate = new Boolean[sizeX][sizeY];
+        for (int y = 0; y < sizeY; y++) {
+            for (int x = 0; x < sizeX; x++) {
+                gamestate[x][y] = cellEvaluator.determineCell(cellsPrefiltered[x][y], cellsCircles[x][y]);
+            }
+        }
+        return gamestate;
+    }
+
+    private void constructCells(Box[][] boundingBoxes, int sizeX, int sizeY,
+            BufferedImage prefilteredImage, BufferedImage imageGrid, BufferedImage imageCircles,
+            BufferedImage[][] prefilteredCells, BufferedImage[][] circleCells) {
         
-        // TODO
-        return null;
+        for (int y = 0; y < sizeY; y++) {
+            for (int x = 0; x < sizeX; x++) {
+                Box box = boundingBoxes[x][y];
+
+                int width = box.xMax - box.xMin;
+                int height = box.yMax - box.yMin;
+                
+                prefilteredCells[x][y] = new BufferedImage(width, height, prefilteredImage.getType());
+                circleCells[x][y] = new BufferedImage(width, height, prefilteredImage.getType());
+
+                for (int j = box.yMin; j < box.yMax; j++) {
+                    for (int i = box.xMin; i < box.xMax; i++) {
+                        
+                        int k = i - box.xMin;
+                        int l = j - box.yMin;
+
+                        int color, mask;
+                        mask = (imageGrid.getRGB(i, j) == FRONT ? 0xff000000 : 0xffffffff);
+
+                        color = prefilteredImage.getRGB(i, j) & mask;
+                        prefilteredCells[x][y].setRGB(k, l, color);
+
+                        color = imageCircles.getRGB(i, j) & mask;
+                        circleCells[x][y].setRGB(k, l, color);
+                    }
+                }
+                
+                // TODO : debug à retirer
+                ImageProcessPipeline pl_debug = new ImageProcessPipeline();
+                pl_debug.process(prefilteredCells[x][y]);
+                pl_debug.process(circleCells[x][y]);
+            }
+        }
     }
-    
-    private Point[][] detectCellsPositions(List[] borders, BufferedImage imageGrid) {
+
+    private void calcBoundingBoxes(Point[][] intersections, int sizeX, int sizeY, Box[][] boxes) {
+
+        Point[] pts = new Point[4];
+
+        for (int y = 0; y < sizeY; y++) {
+            for (int x = 0; x < sizeX; x++) {
+                pts[0] = intersections[x][y];
+                pts[1] = intersections[x + 1][y];
+                pts[2] = intersections[x][y + 1];
+                pts[3] = intersections[x + 1][y + 1];
+                
+                int xMin, xMax, yMin, yMax;
+                xMin = xMax = yMin = yMax = 0;
+                boolean init = false;
+                
+                for (Point pt : pts) {
+                    int coordX = pt.x;
+                    int coordY = pt.y;
+
+                    if (!init) {
+                        xMin = coordX;
+                        xMax = coordX;
+                        yMin = coordY;
+                        yMax = coordY;
+                        init = true;
+                    } else {
+                        if (coordX > xMax) {
+                            xMax = coordX;
+                        }
+                        if (coordX < xMin) {
+                            xMin = coordX;
+                        }
+                        if (coordY > yMax) {
+                            yMax = coordY;
+                        }
+                        if (coordY < yMin) {
+                            yMin = coordY;
+                        }
+                    }
+
+                }
+                boxes[x][y] = new Box(xMin, xMax, yMin, yMax);
+            }
+        }
+    }
+
+    private void detectLinesIntersections(BufferedImage imageGrid, List<Integer>[] borders, List<StraightLine>[] lines, Point[][] intersections) {
         
-        int k = imageGrid.getWidth()-1;
-        int l = imageGrid.getHeight()-1;
+        int k = imageGrid.getWidth() - 1;
+        int l = imageGrid.getHeight() - 1;
 
         List<Integer> top = borders[0];
         List<Integer> bottom = borders[1];
         List<Integer> left = borders[2];
         List<Integer> right = borders[3];
-        
-        int gridSizeX = top.size() - 1;
-        int gridSizeY = left.size() - 1;
 
-        Point[][] cellsPos = new Point[gridSizeX][gridSizeY];
+        int gridSizeX = top.size();
+        int gridSizeY = left.size();
+
+        lines[0] = new ArrayList<>();
+        lines[1] = new ArrayList<>();
 
         StraightLine verticalLine, horizontalLine;
         for (int j = 0; j < gridSizeY; j++) {
@@ -77,17 +180,27 @@ public class GridEvaluator {
                     new Point(0, left.get(j)),
                     new Point(k, right.get(j))
             );
-            for(int i = 0; i < gridSizeX; i++) {
+            lines[0].add(horizontalLine);
+            for (int i = 0; i < gridSizeX; i++) {
                 verticalLine = new StraightLine(
-                    new Point(top.get(i), 0),
-                    new Point(bottom.get(i), l)
+                        new Point(top.get(i), 0),
+                        new Point(bottom.get(i), l)
                 );
+                lines[1].add(verticalLine);
                 Point intersect = StraightLine.calcIntersect(verticalLine, horizontalLine);
-                cellsPos[j][i] = intersect;
+                
+                if(intersect.x < 0)
+                    intersect.x = 0;
+                if(intersect.x > k)
+                    intersect.x = k;
+                if(intersect.y < 0)
+                    intersect.y = 0;
+                if(intersect.y > l)
+                    intersect.y = l;
+                    
+                intersections[j][i] = intersect;
             }
         }
-
-        return cellsPos;
     }
 
     private List[] detectBorders(BufferedImage imageGrid) {
@@ -136,20 +249,20 @@ public class GridEvaluator {
         }
 
         if ((top.size() != bottom.size()) || (left.size() != right.size())) {
-            System.err.println("Erreur pendant la construction de la grille");
+            System.err.println("Erreur pendant la détection de la grille (parcours des bords)");
             return null;
         }
 
         if (top.size() == 2) {
-            top.add(0);
+            top.add(0, 0);
             top.add(l);
-            bottom.add(0);
+            bottom.add(0, 0);
             bottom.add(l);
         }
         if (left.size() == 2) {
-            left.add(0);
+            left.add(0, 0);
             left.add(k);
-            right.add(0);
+            right.add(0, 0);
             right.add(k);
         }
 

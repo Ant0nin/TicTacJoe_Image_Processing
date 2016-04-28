@@ -23,17 +23,23 @@ import java.awt.image.BufferedImage;
  * @author Antonin Bernardin <antonin.bernardin at etu.unilim.fr>
  */
 public class BWHistogramEvaluator {
+
+    private final boolean normalized;
     
-    public long[] evaluate(BufferedImage image) {
+    public BWHistogramEvaluator(boolean normalized) {
+        this.normalized = normalized;
+    }
+    
+    public float[] evaluate(BufferedImage image) {
         
-        long[] histogram = new long[2];
+        float[] histogram = new float[2];
         for(int i=0; i<histogram.length; i++)
             histogram[i] = 0;
         
         for(int y = 0; y < image.getHeight(); y++)
             for(int x = 0; x < image.getWidth(); x++)
             {
-                int pixelColor = image.getRGB(x, y) & 0x00ffffff;
+                int pixelColor = image.getRGB(x, y);
                 
                 switch (pixelColor) {
                     case 0xff000000:
@@ -47,6 +53,12 @@ public class BWHistogramEvaluator {
                         return null;
                 }
             }
+        
+        if(normalized) {
+            float sum = histogram[0] + histogram[1];
+            histogram[0] = (histogram[0] / sum * 100F);
+            histogram[1] = (histogram[1] / sum * 100F);
+        }
         
         return histogram;
     }

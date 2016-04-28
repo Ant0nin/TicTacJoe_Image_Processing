@@ -16,8 +16,6 @@
  */
 package image_analysis;
 
-import image_processing.HoughCircleAccumulator;
-import image_processing.HoughLineAccumulator;
 import java.awt.image.BufferedImage;
 
 /**
@@ -30,34 +28,38 @@ public class CellEvaluator {
     public final static Boolean CROSS = false;
     public final static Boolean CIRCLE = true;
     
-    private final HoughLineAccumulator linesAccGenerator;
-    private final HoughCircleAccumulator circlesAccGenerator;
-    int abscencePercentage;
+    private int abscencePercentage;
+    private int circleDetectPercentage;
     
-    public CellEvaluator(HoughLineAccumulator linesAcc, HoughCircleAccumulator circlesAcc, int abscencePercentage) {
-        this.linesAccGenerator = linesAcc;
-        this.circlesAccGenerator = circlesAcc;
+    public CellEvaluator(int abscencePercentage, int circleDetectPercentage) {
         
-        if(abscencePercentage < 0 || abscencePercentage > 100)
-            System.err.println("Erreur : Le pourcentage d'absence doit être compris entre 0 et 100");
+        if(abscencePercentage < 0 || abscencePercentage > 100) {
+            System.err.println("Erreur : Le pourcentage d'absence de forme doit être compris entre 0 et 100");
+        }
         else
             this.abscencePercentage = abscencePercentage;
+        
+        if(circleDetectPercentage < 0 || circleDetectPercentage > 100) {
+            System.err.println("Erreur : Le pourcentage de détection de cercle doit être compris entre 0 et 100");
+        }
+        else
+            this.circleDetectPercentage = circleDetectPercentage;
     }
 
-    public Boolean determineCell(BufferedImage cell) {
+    public Boolean determineCell(BufferedImage cellPrefiltered, BufferedImage cellCircle) {
+                
+        BWHistogramEvaluator colorEvaluator = new BWHistogramEvaluator(true);
+        float histogram[];
         
-        BWHistogramEvaluator evaluator = new BWHistogramEvaluator();
-        long histogram[] = evaluator.evaluate(cell);
-        int countTotalPixels = cell.getWidth() * cell.getHeight();
-        int limit = (int)((float)abscencePercentage/100.0*(float)countTotalPixels);
-        if(histogram[0] > limit || histogram[1] < limit )
+        histogram = colorEvaluator.evaluate(cellPrefiltered);
+        if(histogram[0] > (float)abscencePercentage)
             return NOTHING;
         
-        BufferedImage linesAcc = linesAccGenerator.process(cell);
-        BufferedImage circlesAcc = circlesAccGenerator.process(cell);
-        
-        // TODO : comparer les accumulateurs;
-        return null;
+        histogram = colorEvaluator.evaluate(cellCircle);
+        if(histogram[1] > (float)circleDetectPercentage)
+            return CIRCLE;
+        else
+            return CROSS;
     }
     
 }

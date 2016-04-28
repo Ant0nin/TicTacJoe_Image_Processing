@@ -28,10 +28,10 @@ import java.util.List;
  */
 public class ImageProcessPipeline extends AbstractImageProcess {
 
-    private static int count = 0;
+    private static int COUNT = 0;
     
-    private final List<AbstractImageProcess> tasks;
-    private final List<BufferedImage> intermediateImages;
+    private List<AbstractImageProcess> tasks;
+    private static final List<BufferedImage> INTERMEDIATE_IMAGES = new ArrayList<>();
     
     public ImageProcessPipeline(AbstractImageProcess... imageProcesses) {
         this(Arrays.asList(imageProcesses));
@@ -39,35 +39,34 @@ public class ImageProcessPipeline extends AbstractImageProcess {
     
     public ImageProcessPipeline(List<AbstractImageProcess> imageProcesses) {
         super();
-        intermediateImages = new ArrayList<>(imageProcesses.size());
-        tasks = imageProcesses;
+        this.tasks = imageProcesses;
     }
     
     @Override
     public BufferedImage process(BufferedImage input) {
         
         BufferedImage output = new BufferedImage(input.getWidth(), input.getHeight(), input.getType());
-        intermediateImages.add(input);
+        INTERMEDIATE_IMAGES.add(input);
         
         for(AbstractImageProcess p : tasks) {
             output = p.process(input);
-            intermediateImages.add(output);
+            INTERMEDIATE_IMAGES.add(output);
             input = output;
         }
 
         return output;
     }
     
-    public void exportPipelineImages(ImageFilesManager fileManager, String filename) {
+    public static void exportPipelineImages(ImageFilesManager fileManager, String filename) {
         
         String[] split = filename.split("\\.");
         StringBuilder fullpath;
         
-        for(BufferedImage image : intermediateImages) {
+        for(BufferedImage image : INTERMEDIATE_IMAGES) {
             fullpath = new StringBuilder();
-            fullpath.append(split[0]).append('\\').append(count).append('.').append(split[1]);
+            fullpath.append(split[0]).append('\\').append(COUNT).append('.').append(split[1]);
             fileManager.exportImage(image, fullpath.toString());
-            count++;
+            COUNT++;
         }
     }
     

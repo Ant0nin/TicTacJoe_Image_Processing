@@ -16,9 +16,9 @@
  */
 package tni_morpion;
 
+import image_analysis.CellEvaluator;
 import image_analysis.ColorHistogramEvaluator;
 import image_analysis.GridEvaluator;
-import image_processing.AbstractImageProcess;
 import image_processing.AccumulatorMask;
 import image_processing.CustomFilter;
 import image_processing.Dilation;
@@ -35,8 +35,6 @@ import image_processing.Skeletonization;
 import image_processing.Thresholding;
 import import_export.ImageFilesManager;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
@@ -46,66 +44,69 @@ public class TNI_Morpion {
 
     final static String INPUT_FOLDER_NAME = System.getProperty("user.dir") + "\\res\\img\\" + "input";
     final static String OUTPUT_FOLDER_NAME = System.getProperty("user.dir") + "\\res\\img\\" + "output";
-    final static String IMAGE_FILENAME = "morpion005.png";
+    final static String IMAGE_FILENAME = "morpion002.png";
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
 
+        
+        
         ImageFilesManager filesManager = new ImageFilesManager(INPUT_FOLDER_NAME, OUTPUT_FOLDER_NAME);
-        BufferedImage image = filesManager.importImage(IMAGE_FILENAME);
+        BufferedImage img_input = filesManager.importImage(IMAGE_FILENAME);
 
         // Processes
-        GridEvaluator gridConstructor = new GridEvaluator(5);
         AccumulatorMask linesAccMask = new AccumulatorMask(
-            new int[][]{ 
-                {40,50}, 
-                {130,140}}
+                new int[][]{
+                    {40, 50},
+                    {130, 140}}
         );
-        List<AbstractImageProcess> allProcesses = new ArrayList<>();
         CustomFilter blurFilter = new CustomFilter("softer");
         CustomFilter sharpenFilter = new CustomFilter("sharpen_medium");
         CustomFilter softenVeryHigh = new CustomFilter("soften_very_high");
-        long[] colorHistogram = new ColorHistogramEvaluator().evaluate(image);
+        long[] colorHistogram = new ColorHistogramEvaluator().evaluate(img_input);
         DominantColorThresholding deleteDominantColor = new DominantColorThresholding(colorHistogram, 1);
         Dilation simpleDilation = new Dilation();
         Skeletonization skeletonizationProcess = new Skeletonization();
-        HoughLineAccumulator linesAcc = new HoughLineAccumulator((int) Math.sqrt(image.getWidth() * image.getWidth() + image.getHeight() * image.getHeight()));
-        HoughLine houghLine = new HoughLine(3000);
+        HoughLineAccumulator linesAcc = new HoughLineAccumulator((int) Math.sqrt(img_input.getWidth() * img_input.getWidth() + img_input.getHeight() * img_input.getHeight()));
         HoughCircleAccumulator circleAcc = new HoughCircleAccumulator(40, 70);
-        HoughCircle houghCircle = new HoughCircle(500, 12, 15);
-        Thresholding simpleThresholding = new Thresholding(0xffaaaaaa);
         NegativeFilter inversion = new NegativeFilter();
         Erosion erosion = new Erosion();
+        
+        Thresholding simpleThresholding = new Thresholding(0xffaaaaaa);
         Scaling scaling = new Scaling(300, 300);
+        HoughLine houghLine = new HoughLine(4000);
+        HoughCircle houghCircle = new HoughCircle(250, 15, 25);
+        CellEvaluator cellEvaluator = new CellEvaluator(98, 5);
+        GridEvaluator gridEvaluator = new GridEvaluator(10, cellEvaluator);
 
         /*NoiseEvaluator noiseEv = new NoiseEvaluator();
         long noiseQty = noiseEv.evaluate(image);
         int blurIt = (int)(noiseQty / 1000000);
         for(int i = 0; i < blurIt; i++)
             allProcesses.add(blurFilter);*/
+        ImageProcessPipeline pl_prefiltering = new ImageProcessPipeline(
+                scaling,
+                inversion,
+                simpleThresholding
+        );
+        ImageProcessPipeline pl_gridDetection = new ImageProcessPipeline(
+                houghLine,
+                simpleThresholding
+        );
+        ImageProcessPipeline pl_circleDetection = new ImageProcessPipeline(
+                houghCircle,
+                simpleThresholding
+        );        
         
-        // TODO : voir la classe Graphics pour le scaling
+        BufferedImage img_prefiltered = pl_prefiltering.process(img_input);
+        BufferedImage img_grid = pl_gridDetection.process(img_prefiltered);
+        BufferedImage img_circles = pl_circleDetection.process(img_prefiltered);
 
-        /*allProcesses.add(blurFilter);
-        allProcesses.add(blurFilter);
-        allProcesses.add(blurFilter);*/
-        allProcesses.add(simpleThresholding);
-        //allProcesses.add(inversion);
-        //allProcesses.add(deleteDominantColor);
-        allProcesses.add(scaling);
-        allProcesses.add(houghLine);
-        allProcesses.add(simpleThresholding);
-
-        ImageProcessPipeline pipeline = new ImageProcessPipeline(allProcesses);
-
-        image = pipeline.process(image);
-        pipeline.exportPipelineImages(filesManager, IMAGE_FILENAME);
+        ImageProcessPipeline.exportPipelineImages(filesManager, IMAGE_FILENAME);
         
-        Boolean[][] grid = gridConstructor.evaluate(image);
-        
-        
+        Boolean[][] gamestate = gridEvaluator.evaluate(img_prefiltered, img_grid, img_circles);
     }
 
 }
