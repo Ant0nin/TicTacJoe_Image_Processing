@@ -24,11 +24,17 @@ import java.awt.image.BufferedImage;
  */
 public class Thresholding extends AbstractImageProcess {
 
-    final private int thresholdARGB;
+    final private int ALimit;
+    final private int RLimit;
+    final private int GLimit;
+    final private int BLimit;
 
     public Thresholding(int thresholdARGB) {
         super();
-        this.thresholdARGB = thresholdARGB;
+        this.ALimit = (thresholdARGB & 0xff000000) >> 24;
+        this.RLimit = (thresholdARGB & 0x00ff0000) >> 16;
+        this.GLimit = (thresholdARGB & 0x0000ff00) >> 8;
+        this.BLimit = (thresholdARGB & 0x000000ff);
     }
     
     @Override
@@ -39,7 +45,13 @@ public class Thresholding extends AbstractImageProcess {
         for(int x = 0; x < input.getWidth(); x++)
             for(int y = 0; y < input.getHeight(); y++)
             {
-                if(input.getRGB(x, y) > thresholdARGB)
+                int pixelColor = input.getRGB(x, y);
+                int A = (pixelColor & 0xff000000) >> 24;
+                int R = (pixelColor & 0x00ff0000) >> 16;
+                int G = (pixelColor & 0x0000ff00) >> 8;
+                int B = (pixelColor & 0x000000ff);     
+                
+                if(A > ALimit || R > RLimit || G > GLimit || B > BLimit)
                     output.setRGB(x, y, 0xffffffff);
                 else
                     output.setRGB(x, y, 0xff000000);

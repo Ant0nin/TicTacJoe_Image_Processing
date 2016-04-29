@@ -24,14 +24,14 @@ import java.util.List;
  *
  * @author Antonin Bernardin <antonin.bernardin at etu.unilim.fr>
  */
-public class DominantColorThresholding extends AbstractImageProcess {
+public class DominantColorEliminator extends AbstractImageProcess {
     
     List<Integer> colorsToRemove = new ArrayList<>();
     
-    public DominantColorThresholding(long[] colorHistogram, long sensibility) {
+    public DominantColorEliminator(float[] colorHistogram, int dominantColorPercentage) {
         
         for(int i = 0; i < colorHistogram.length; i++)
-            if(colorHistogram[i] > sensibility)
+            if((int)colorHistogram[i] > dominantColorPercentage)
                 colorsToRemove.add(i);
     }
 

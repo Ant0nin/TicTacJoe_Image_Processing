@@ -16,7 +16,6 @@
  */
 package image_analysis;
 
-import image_processing.ImageProcessPipeline;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +32,7 @@ public class GridEvaluator {
 
     private final int spaceTolerance;
     private final CellEvaluator cellEvaluator;
+    private final int marginOffset;
 
     private int spaceBetween; // TODO : retirer
 
@@ -40,9 +40,10 @@ public class GridEvaluator {
     private final int BACK = 0xff000000;
     private final int FRONT = 0xffffffff;
 
-    public GridEvaluator(int spaceTolerance, CellEvaluator cellEvaluator) {
+    public GridEvaluator(int spaceTolerance, int marginOffset, CellEvaluator cellEvaluator) {
         this.spaceTolerance = spaceTolerance;
         this.cellEvaluator = cellEvaluator;
+        this.marginOffset = marginOffset;
     }
 
     public PlayerEnum[][] evaluate(BufferedImage prefilteredImage, BufferedImage imageGrid, BufferedImage imageCircles) {
@@ -209,18 +210,23 @@ public class GridEvaluator {
         List<Integer> left = new ArrayList<>();
         List<Integer> right = new ArrayList<>();
         List[] borders = {top, bottom, left, right};
+        
+        final int k = height - 1 - marginOffset;
+        final int l = width - 1 - marginOffset;
+        final int m = height - marginOffset;
+        final int n = width - marginOffset;
+
 
         spaceBetween = 0;
-        for (int x = 0; x < width; x++) {
-            int argb = imageGrid.getRGB(x, 0);
+        for (int x = marginOffset; x < n; x++) {
+            int argb = imageGrid.getRGB(x, marginOffset);
             if (detectEndpoint(argb)) {
                 top.add(x);
             }
         }
 
         spaceBetween = 0;
-        final int k = height - 1;
-        for (int x = 0; x < width; x++) {
+        for (int x = marginOffset; x < n; x++) {
             int argb = imageGrid.getRGB(x, k);
             if (detectEndpoint(argb)) {
                 bottom.add(x);
@@ -228,16 +234,15 @@ public class GridEvaluator {
         }
 
         spaceBetween = 0;
-        for (int y = 0; y < height; y++) {
-            int argb = imageGrid.getRGB(0, y);
+        for (int y = marginOffset; y < m; y++) {
+            int argb = imageGrid.getRGB(marginOffset, y);
             if (detectEndpoint(argb)) {
                 left.add(y);
             }
         }
 
         spaceBetween = 0;
-        final int l = width - 1;
-        for (int y = 0; y < height; y++) {
+        for (int y = marginOffset; y < m; y++) {
             int argb = imageGrid.getRGB(l, y);
             if (detectEndpoint(argb)) {
                 right.add(y);

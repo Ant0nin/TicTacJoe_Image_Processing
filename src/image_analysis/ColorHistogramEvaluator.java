@@ -24,17 +24,18 @@ import java.awt.image.BufferedImage;
  */
 public class ColorHistogramEvaluator {
     
-    public long[] evaluate(BufferedImage image) {
+    public float[] evaluate(BufferedImage image) {
         
-        long[] histogram = new long[(int)Math.pow(2, 24)];
+        float[] histogram = new float[(int)Math.pow(2, 24)];
         for(int i=0; i<histogram.length; i++)
             histogram[i] = 0;
         
+        float increment = 100F / (image.getWidth() * image.getHeight());
         for(int y = 0; y < image.getHeight(); y++)
             for(int x = 0; x < image.getWidth(); x++)
             {
                 int pixelColor = image.getRGB(x, y) & 0x00ffffff;
-                histogram[pixelColor]++;
+                histogram[pixelColor]+=increment;
             }
         
         return histogram;

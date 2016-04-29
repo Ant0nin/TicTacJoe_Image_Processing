@@ -23,7 +23,7 @@ import java.awt.image.BufferedImage;
  * @author Antonin Bernardin <antonin.bernardin at etu.unilim.fr>
  */
 public class Dilation extends AbstractImageProcess {
-
+    
     @Override
     public BufferedImage process(BufferedImage input) {
         
