@@ -50,7 +50,7 @@ public class XmlParametersImporter {
 
             File configFile = new File(inputDirPath + "\\" + imageName + ".xml");
             if (!configFile.exists() || forceUseDefaultConfig) {
-                configFile = new File(inputDirPath + "\\default.xml");
+                configFile = new File(inputDirPath + "\\_default.xml");
             }
 
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();

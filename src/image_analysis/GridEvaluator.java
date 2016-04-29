@@ -249,7 +249,7 @@ public class GridEvaluator {
             }
         }
 
-        if ((top.size() != bottom.size()) || (left.size() != right.size())) {
+        if (top.size() < 2 || left.size() < 2 || top.size() != bottom.size() || left.size() != right.size()) {
             System.err.println("Erreur pendant la détection de la grille (parcours des bords)");
             return null;
         }

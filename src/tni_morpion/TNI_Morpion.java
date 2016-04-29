@@ -20,21 +20,26 @@ import game_logic.GamestateEvaluator;
 import image_analysis.CellEvaluator;
 import image_analysis.ColorHistogramEvaluator;
 import image_analysis.GridEvaluator;
+import image_processing.AbstractImageProcess;
 import image_processing.AccumulatorMask;
 import image_processing.CustomFilter;
 import image_processing.Dilation;
 import image_processing.DominantColorEliminator;
+import image_processing.Erosion;
 import image_processing.HoughCircle;
 import image_processing.HoughLine;
 import image_processing.ImageProcessPipeline;
+import image_processing.NegativeFilter;
 import image_processing.Scaling;
-import image_processing.Thresholding;
+import image_processing.ThresholdingARGB;
 import import_export.ImageFilesManager;
 import import_export.XmlParametersImporter;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import structures.PlayerEnum;
 
@@ -54,7 +59,7 @@ public class TNI_Morpion {
     public static void main(String[] args) {
 
         String IMAGE_FILENAME = null;
-        System.out.println("Veuillez entrer le nom de l'image à traiter");
+        System.out.println("Veuillez entrer le nom de l'image à traiter :");
         try {
             BufferedReader bufferRead = new BufferedReader(new InputStreamReader(System.in));
             IMAGE_FILENAME = bufferRead.readLine();
@@ -67,9 +72,10 @@ public class TNI_Morpion {
         Map<String, Integer> configParams = configImporter.importParameter(IMAGE_FILENAME);
         ImageFilesManager filesManager = new ImageFilesManager(INPUT_FOLDER_NAME, OUTPUT_FOLDER_NAME);
                 
+        final int PARAM_FIRST_THRESHOLD = configParams.get("firstThreshold");
         final int PARAM_SCALING_WIDTH = configParams.get("scalingWidth");
         final int PARAM_SCALING_HEIGHT = configParams.get("scalingHeight");
-        final int PARAM_THRESHOLD_VALUE = configParams.get("thresholdValue");
+        final int PARAM_THRESHOLD_HOUGH = configParams.get("thresholdHough");
         final int PARAM_HOUGH_LINES_QUANTITY = configParams.get("houghLinesQuantity");
         final int PARAM_HOUGH_CIRCLES_QUANTITY = configParams.get("houghCirclesQuantity");
         final int PARAM_HOUGH_RADIUS_START = configParams.get("houghCirclesRadiusStart");
@@ -78,16 +84,22 @@ public class TNI_Morpion {
         final int PARAM_CIRCLE_DETECT_PERCENTAGE = configParams.get("circleDetectPercentage");
         final int PARAM_SPACE_TOLERANCE = configParams.get("spaceTolerance");
         final int PARAM_NUMBER_ALIGN_TO_WIN = configParams.get("numberAlignToWin");
-        final int PARAM_DOMINANT_COLOR_PERCENTAGE = configParams.get("dominantColorPercentage");
+        final int PARAM_DOMINANT_COLOR_COEF = configParams.get("dominantColorCoef");
         final int PARAM_GRID_MARGIN_OFFSET = configParams.get("gridMarginOffset");
+        final int PARAM_BLUR_OCCURENCES = configParams.get("blurOccurences");
+        final int PARAM_NEED_INVERSION = configParams.get("needInversion");
+        final int PARAM_DILATION_OCCURENCES = configParams.get("dilationOccurences");
+        final int PARAM_EROSION_OCCURENCES = configParams.get("erosionOccurences");
         
         BufferedImage img_input = filesManager.importImage(IMAGE_FILENAME);
 
-        float[] colorHistogram = new ColorHistogramEvaluator().evaluate(img_input);
-        DominantColorEliminator dominantColorElimination = new DominantColorEliminator(colorHistogram, PARAM_DOMINANT_COLOR_PERCENTAGE);
+        ThresholdingARGB firstThreshold = new ThresholdingARGB(PARAM_FIRST_THRESHOLD);
+        long[] colorHistogram = new ColorHistogramEvaluator().evaluate(img_input);
+        DominantColorEliminator dominantColorElimination = new DominantColorEliminator(colorHistogram, PARAM_DOMINANT_COLOR_COEF);
         Dilation dilation = new Dilation();
-        CustomFilter blurFilter = new CustomFilter("soften_high");
-        Thresholding simpleThresholding = new Thresholding(PARAM_THRESHOLD_VALUE);
+        NegativeFilter inversion = new NegativeFilter();
+        CustomFilter blurFilter = new CustomFilter("softer");
+        ThresholdingARGB thresholdingAfterHough = new ThresholdingARGB(PARAM_THRESHOLD_HOUGH);
         Scaling scaling = new Scaling(PARAM_SCALING_WIDTH, PARAM_SCALING_HEIGHT);
         AccumulatorMask maskDiagonals = new AccumulatorMask(new int[][]{{40, 50},{130, 140}});
         HoughLine houghLine = new HoughLine(PARAM_HOUGH_LINES_QUANTITY, maskDiagonals);
@@ -95,24 +107,36 @@ public class TNI_Morpion {
         CellEvaluator cellEvaluator = new CellEvaluator(PARAM_ABSCENCE_PERCENTAGE, PARAM_CIRCLE_DETECT_PERCENTAGE);
         GridEvaluator gridEvaluator = new GridEvaluator(PARAM_SPACE_TOLERANCE, PARAM_GRID_MARGIN_OFFSET, cellEvaluator);
         GamestateEvaluator gameEvaluator = new GamestateEvaluator(PARAM_NUMBER_ALIGN_TO_WIN);
+        Erosion erosion = new Erosion();
         
-        ImageProcessPipeline pl_prefiltering = new ImageProcessPipeline(
-                blurFilter,
-                dominantColorElimination,
-                dilation,
-                scaling
-        );
+        List<AbstractImageProcess> prefilteringSteps = new ArrayList<>();
+        if(PARAM_NEED_INVERSION == 1)
+            prefilteringSteps.add(inversion);
+        for(int i = 0; i < PARAM_BLUR_OCCURENCES; i++)
+            prefilteringSteps.add(blurFilter);
+        if(PARAM_FIRST_THRESHOLD != 0x00000000)
+            prefilteringSteps.add(firstThreshold);
+        if(PARAM_DOMINANT_COLOR_COEF != 0)
+            prefilteringSteps.add(dominantColorElimination);
+        for(int i = 0; i < PARAM_EROSION_OCCURENCES; i++)
+            prefilteringSteps.add(erosion);        
+        for(int i = 0; i < PARAM_DILATION_OCCURENCES; i++)
+            prefilteringSteps.add(dilation);
+        
+        prefilteringSteps.add(scaling);
+        
+        ImageProcessPipeline pl_prefiltering = new ImageProcessPipeline(prefilteringSteps);
         ImageProcessPipeline pl_gridDetection = new ImageProcessPipeline(
                 houghLine,
-                simpleThresholding
+                thresholdingAfterHough
         );
         ImageProcessPipeline pl_circleDetection = new ImageProcessPipeline(
                 houghCircle,
-                simpleThresholding
+                thresholdingAfterHough
         );
 
         System.out.println();
-        System.out.println("Prétraitement : Elimination du bruit, seuillage en fonction de la couleur diminante et amélioration des formes...");
+        System.out.println("Prétraitement...");
         BufferedImage img_prefiltered = pl_prefiltering.process(img_input);    
         System.out.println("Détection de la grille : Tracé de "+PARAM_HOUGH_LINES_QUANTITY+" lignes de Hough...");
         BufferedImage img_grid = pl_gridDetection.process(img_prefiltered);

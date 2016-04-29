@@ -131,7 +131,7 @@ public class GamestateEvaluator {
         transitionsCount = 0;
         for(int i=1; i<gridSizeX; i++) {
             
-            int j = gridSizeY - i;
+            int j = gridSizeY - i - 1;
             PlayerEnum previous = gamestate[i-1][j+1];
             PlayerEnum current = gamestate[i][j];
             

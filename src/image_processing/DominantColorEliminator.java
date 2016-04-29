@@ -28,10 +28,10 @@ public class DominantColorEliminator extends AbstractImageProcess {
     
     List<Integer> colorsToRemove = new ArrayList<>();
     
-    public DominantColorEliminator(float[] colorHistogram, int dominantColorPercentage) {
+    public DominantColorEliminator(long[] colorHistogram, int dominantColorCoef) {
         
         for(int i = 0; i < colorHistogram.length; i++)
-            if((int)colorHistogram[i] > dominantColorPercentage)
+            if(colorHistogram[i] > dominantColorCoef)
                 colorsToRemove.add(i);
     }
 
